@@ -43,7 +43,11 @@ public abstract class Usuario implements Serializable {
 
     public String getAtributo(String atributo) {
         String valorComum = getAtributoComum(atributo);
-        return valorComum != null ? valorComum : getAtributoEspecifico(atributo);
+        if (valorComum != null) {
+            return valorComum;
+        }
+        validarAtributoPagamento(atributo);
+        return getAtributoEspecifico(atributo);
     }
 
     private String getAtributoComum(String atributo) {
@@ -56,20 +60,15 @@ public abstract class Usuario implements Serializable {
 
     private String getAtributoBasico(String atributo) {
         switch (atributo) {
-            case "nome":
-                return nome;
-            case "email":
-                return email;
-            case "senha":
-                return senha;
-            case "tipo":
-                return getTipo();
-            case "estado":
-                return "ativo";
-            case "metodoPagamento":
-                return "nenhum";
-            default:
-                return null;
+            case "nome": return nome;
+            case "email": return email;
+            case "senha": return senha;
+            case "tipo": return getTipo();
+            case "estado": return "ativo";
+            case "aluguelAtivo": return "nenhum";
+            case "totalPendencias": return "0,00";
+            case "metodoPagamento": return "nenhum";
+            default: return null;
         }
     }
 
@@ -81,6 +80,18 @@ public abstract class Usuario implements Serializable {
                 return plano.getMensalidadeFormatada();
             default:
                 return null;
+        }
+    }
+
+    private void validarAtributoPagamento(String atributo) {
+        if ("numeroCartao".equals(atributo) || "validadeCartao".equals(atributo)) {
+            throw new UsuarioException("Usuario nao usa cartao.");
+        }
+        if ("chavePix".equals(atributo)) {
+            throw new UsuarioException("Usuario nao usa pix.");
+        }
+        if ("saldo".equals(atributo)) {
+            throw new UsuarioException("Usuario nao usa saldo pre-carregado.");
         }
     }
 
