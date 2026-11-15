@@ -32,6 +32,10 @@ public class Facade {
         return sistema.getAtributoUsuario(usuario, atributo);
     }
 
+    public String getUsuarioPorEmail(String email) {
+        return sistema.getUsuarioPorEmail(email);
+    }
+
     public void zerarSistema() {
         sistema.zerar();
     }

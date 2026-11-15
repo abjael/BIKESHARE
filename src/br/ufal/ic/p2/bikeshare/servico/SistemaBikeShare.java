@@ -74,6 +74,19 @@ public class SistemaBikeShare {
         return usuario.getAtributo(atributo);
     }
 
+    public String getUsuarioPorEmail(String email) {
+        if (emBranco(email)) {
+            throw new UsuarioException("Email nao pode ser nulo.");
+        }
+        String chaveEmail = normalizarEmail(email);
+        for (Usuario usuario : usuarios.values()) {
+            if (normalizarEmail(usuario.getEmail()).equals(chaveEmail)) {
+                return usuario.getId();
+            }
+        }
+        throw new UsuarioException("Usuario nao existe.");
+    }
+
     public void zerar() {
         usuarios.clear();
         proximoIdUsuario = 1;
