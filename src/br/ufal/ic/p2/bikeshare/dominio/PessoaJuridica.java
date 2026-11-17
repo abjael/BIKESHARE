@@ -2,6 +2,8 @@ package br.ufal.ic.p2.bikeshare.dominio;
 
 import br.ufal.ic.p2.bikeshare.excecao.usuario.UsuarioException;
 
+import java.math.BigDecimal;
+
 public class PessoaJuridica extends Usuario {
     private static final long serialVersionUID = 1L;
     private final String cnpj;
@@ -10,6 +12,14 @@ public class PessoaJuridica extends Usuario {
     public PessoaJuridica(String id, String nome, String email, String senha, String cnpj,
                           String razaoSocial, Plano plano) {
         super(id, nome, email, senha, plano);
+        this.cnpj = cnpj;
+        this.razaoSocial = razaoSocial;
+    }
+
+    public PessoaJuridica(String id, String nome, String email, String senha, String cnpj,
+                          String razaoSocial, Plano plano, MetodoPagamento metodoPagamento,
+                          BigDecimal saldoPreCarregado) {
+        super(id, nome, email, senha, plano, metodoPagamento, saldoPreCarregado);
         this.cnpj = cnpj;
         this.razaoSocial = razaoSocial;
     }
@@ -39,5 +49,12 @@ public class PessoaJuridica extends Usuario {
             throw new UsuarioException("Usuario nao eh pessoa fisica.");
         }
         throw atributoInexistente();
+    }
+
+    @Override
+    protected Usuario criarCopia(String nome, String email, String senha, Plano plano,
+                                 MetodoPagamento metodoPagamento, BigDecimal saldoPreCarregado) {
+        return new PessoaJuridica(getId(), nome, email, senha, cnpj, razaoSocial, plano,
+                metodoPagamento, saldoPreCarregado);
     }
 }

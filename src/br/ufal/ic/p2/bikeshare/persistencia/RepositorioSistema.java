@@ -1,10 +1,13 @@
 package br.ufal.ic.p2.bikeshare.persistencia;
 
 import br.ufal.ic.p2.bikeshare.excecao.BikeShareException;
-import br.ufal.ic.p2.bikeshare.dominio.PessoaFisica;
-import br.ufal.ic.p2.bikeshare.dominio.PessoaJuridica;
+import br.ufal.ic.p2.bikeshare.dominio.Cartao;
 import br.ufal.ic.p2.bikeshare.dominio.PlanoAssinante;
 import br.ufal.ic.p2.bikeshare.dominio.PlanoAvulso;
+import br.ufal.ic.p2.bikeshare.dominio.PessoaFisica;
+import br.ufal.ic.p2.bikeshare.dominio.PessoaJuridica;
+import br.ufal.ic.p2.bikeshare.dominio.Pix;
+import br.ufal.ic.p2.bikeshare.dominio.SaldoPreCarregado;
 
 import java.beans.Expression;
 import java.beans.PersistenceDelegate;
@@ -67,6 +70,7 @@ public class RepositorioSistema {
         registrarPessoaFisica(encoder);
         registrarPessoaJuridica(encoder);
         registrarPlanos(encoder);
+        registrarMetodosPagamento(encoder);
         registrarBigDecimal(encoder);
     }
 
@@ -83,7 +87,8 @@ public class RepositorioSistema {
                 delegate(PessoaFisica.class, objeto -> {
                     PessoaFisica usuario = (PessoaFisica) objeto;
                     return new Object[]{usuario.getId(), usuario.getNome(), usuario.getEmail(), usuario.getSenha(),
-                            usuario.getCpf(), usuario.getPlano()};
+                            usuario.getCpf(), usuario.getPlano(), usuario.getMetodoPagamento(),
+                            usuario.getSaldoPreCarregado()};
                 }));
     }
 
@@ -92,7 +97,8 @@ public class RepositorioSistema {
                 delegate(PessoaJuridica.class, objeto -> {
                     PessoaJuridica usuario = (PessoaJuridica) objeto;
                     return new Object[]{usuario.getId(), usuario.getNome(), usuario.getEmail(), usuario.getSenha(),
-                            usuario.getCnpj(), usuario.getRazaoSocial(), usuario.getPlano()};
+                            usuario.getCnpj(), usuario.getRazaoSocial(), usuario.getPlano(),
+                            usuario.getMetodoPagamento(), usuario.getSaldoPreCarregado()};
                 }));
     }
 
@@ -100,6 +106,18 @@ public class RepositorioSistema {
         encoder.setPersistenceDelegate(PlanoAvulso.class, delegate(PlanoAvulso.class, objeto -> new Object[]{}));
         encoder.setPersistenceDelegate(PlanoAssinante.class,
                 delegate(PlanoAssinante.class, objeto -> new Object[]{((PlanoAssinante) objeto).getMensalidade()}));
+    }
+
+    private void registrarMetodosPagamento(XMLEncoder encoder) {
+        encoder.setPersistenceDelegate(Cartao.class,
+                delegate(Cartao.class, objeto -> {
+                    Cartao cartao = (Cartao) objeto;
+                    return new Object[]{cartao.getNumero(), cartao.getValidade()};
+                }));
+        encoder.setPersistenceDelegate(Pix.class,
+                delegate(Pix.class, objeto -> new Object[]{((Pix) objeto).getChave()}));
+        encoder.setPersistenceDelegate(SaldoPreCarregado.class,
+                delegate(SaldoPreCarregado.class, objeto -> new Object[]{((SaldoPreCarregado) objeto).getSaldo()}));
     }
 
     private void registrarBigDecimal(XMLEncoder encoder) {

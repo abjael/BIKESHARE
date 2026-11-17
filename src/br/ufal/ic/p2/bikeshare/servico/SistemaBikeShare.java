@@ -12,16 +12,16 @@ import br.ufal.ic.p2.bikeshare.persistencia.RepositorioSistema;
 
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.function.Supplier;
-import java.util.regex.Pattern;
+
+import static br.ufal.ic.p2.bikeshare.servico.ValidadorUsuario.emBranco;
+import static br.ufal.ic.p2.bikeshare.servico.ValidadorUsuario.normalizarEmail;
+import static br.ufal.ic.p2.bikeshare.servico.ValidadorUsuario.validarPreenchimento;
 
 public class SistemaBikeShare {
-    private static final Pattern EMAIL_VALIDO = Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
-    private static final Pattern VALOR_NUMERICO = Pattern.compile("^-?\\d+(?:[.,]\\d+)?$");
-
     private final RepositorioSistema repositorio;
+    private final ServicoAlteracaoUsuario servicoAlteracaoUsuario;
     private final Map<String, Usuario> usuarios;
     private int proximoIdUsuario;
 
@@ -30,6 +30,7 @@ public class SistemaBikeShare {
         EstadoPersistido estado = repositorio.carregar();
         usuarios = estado.getUsuarios();
         proximoIdUsuario = estado.getProximoIdUsuario();
+        servicoAlteracaoUsuario = new ServicoAlteracaoUsuario(usuarios);
     }
 
     public String criarPessoaFisica(String nome, String email, String senha, String tipo, String cpf,
@@ -87,6 +88,51 @@ public class SistemaBikeShare {
         throw new UsuarioException("Usuario nao existe.");
     }
 
+    public void alterarUsuario(String id, String atributo, String valor) {
+        if ("metodoPagamento".equals(atributo)) {
+            alterarUsuario(id, atributo, null, valor, null, null, null);
+            return;
+        }
+        alterarUsuario(id, atributo, valor, null, null, null, null);
+    }
+
+    public void alterarUsuario(String id, String atributo, String valor1, String chave) {
+        if (!"metodoPagamento".equals(atributo)) {
+            executarComando(() -> {
+                buscarUsuario(id);
+                throw new UsuarioException("Atributo nao pode ser alterado.");
+            });
+            return;
+        }
+        alterarUsuario(id, atributo, null, valor1, null, null, chave);
+    }
+
+    public void alterarUsuario(String id, String atributo, String valor1, String numero, String validade) {
+        alterarUsuario(id, atributo, null, valor1, numero, validade, null);
+    }
+
+    private void alterarUsuario(String id, String atributo, String valor, String valor1,
+                                String numero, String validade, String chave) {
+        executarComando(() -> {
+            Usuario usuario = buscarUsuario(id);
+            Usuario atualizado = servicoAlteracaoUsuario.alterar(usuario, atributo, valor, valor1,
+                    numero, validade, chave);
+            usuarios.put(id, atualizado);
+            return null;
+        });
+    }
+
+    private Usuario buscarUsuario(String id) {
+        if (emBranco(id)) {
+            throw new UsuarioException("Identificacao do usuario nao pode ser nula.");
+        }
+        Usuario usuario = usuarios.get(id);
+        if (usuario == null) {
+            throw new UsuarioException("Usuario nao existe.");
+        }
+        return usuario;
+    }
+
     public void zerar() {
         usuarios.clear();
         proximoIdUsuario = 1;
@@ -98,10 +144,7 @@ public class SistemaBikeShare {
 
     private void validarDadosComuns(String nome, String email, String senha) {
         validarPreenchimento(nome, "Nome nao pode ser nulo.");
-        validarPreenchimento(email, "Email nao pode ser nulo.");
-        if (!EMAIL_VALIDO.matcher(email.trim()).matches()) {
-            throw new UsuarioException("Email invalido.");
-        }
+        ValidadorUsuario.validarEmail(email);
         validarPreenchimento(senha, "Senha nao pode ser nula.");
     }
 
@@ -129,7 +172,7 @@ public class SistemaBikeShare {
             throw new UsuarioException("Mensalidade nao pode ser nula.");
         }
         String valorNormalizado = valor.trim();
-        if (!VALOR_NUMERICO.matcher(valorNormalizado).matches()) {
+        if (!ValidadorUsuario.VALOR_NUMERICO.matcher(valorNormalizado).matches()) {
             throw new UsuarioException("Mensalidade deve ser numerica.");
         }
         BigDecimal mensalidade = new BigDecimal(valorNormalizado.replace(',', '.'));
@@ -153,20 +196,6 @@ public class SistemaBikeShare {
 
     private String idDisponivel() {
         return "U" + proximoIdUsuario;
-    }
-
-    private String normalizarEmail(String email) {
-        return email.trim().toLowerCase(Locale.ROOT);
-    }
-
-    private void validarPreenchimento(String valor, String mensagem) {
-        if (emBranco(valor)) {
-            throw new UsuarioException(mensagem);
-        }
-    }
-
-    private boolean emBranco(String valor) {
-        return valor == null || valor.trim().isEmpty();
     }
 
     private <T> T executarComando(Supplier<T> comando) {
