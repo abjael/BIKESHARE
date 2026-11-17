@@ -19,12 +19,12 @@ public class Facade {
     }
 
     public String criarUsuario(String nome, String email, String senha, String tipo, String cpf,
-                                String plano, String mensalidade) {
+                                 String plano, String mensalidade) {
         return sistema.criarPessoaFisica(nome, email, senha, tipo, cpf, plano, mensalidade);
     }
 
     public String criarUsuario(String nome, String email, String senha, String tipo, String cnpj,
-                                String razaoSocial, String plano, String mensalidade) {
+                                 String razaoSocial, String plano, String mensalidade) {
         return sistema.criarPessoaJuridica(nome, email, senha, tipo, cnpj, razaoSocial, plano, mensalidade);
     }
 
@@ -34,6 +34,18 @@ public class Facade {
 
     public String getUsuarioPorEmail(String email) {
         return sistema.getUsuarioPorEmail(email);
+    }
+
+    public void alterarUsuario(String usuario, String atributo, String valor) {
+        sistema.alterarUsuario(usuario, atributo, valor);
+    }
+
+    public void alterarUsuario(String usuario, String atributo, String valor1, String chave) {
+        sistema.alterarUsuario(usuario, atributo, valor1, chave);
+    }
+
+    public void alterarUsuario(String usuario, String atributo, String valor1, String numero, String validade) {
+        sistema.alterarUsuario(usuario, atributo, valor1, numero, validade);
     }
 
     public void zerarSistema() {
