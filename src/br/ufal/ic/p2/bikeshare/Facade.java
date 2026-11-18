@@ -36,6 +36,10 @@ public class Facade {
         return sistema.getUsuarioPorEmail(email);
     }
 
+    public void removerUsuario(String usuario) {
+        sistema.removerUsuario(usuario);
+    }
+
     public void alterarUsuario(String usuario, String atributo, String valor) {
         sistema.alterarUsuario(usuario, atributo, valor);
     }
