@@ -88,6 +88,17 @@ public class SistemaBikeShare {
         throw new UsuarioException("Usuario nao existe.");
     }
 
+    public void removerUsuario(String id) {
+        executarComando(() -> {
+            Usuario usuario = buscarUsuario(id);
+            if (!"nenhum".equals(usuario.getAtributo("aluguelAtivo"))) {
+                throw new UsuarioException("Nao e possivel remover usuario com aluguel em andamento.");
+            }
+            usuarios.remove(id);
+            return null;
+        });
+    }
+
     public void alterarUsuario(String id, String atributo, String valor) {
         if ("metodoPagamento".equals(atributo)) {
             alterarUsuario(id, atributo, null, valor, null, null, null);
