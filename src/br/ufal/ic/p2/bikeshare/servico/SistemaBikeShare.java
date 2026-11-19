@@ -2,11 +2,13 @@ package br.ufal.ic.p2.bikeshare.servico;
 
 import br.ufal.ic.p2.bikeshare.dominio.PessoaFisica;
 import br.ufal.ic.p2.bikeshare.dominio.PessoaJuridica;
+import br.ufal.ic.p2.bikeshare.dominio.Estacao;
 import br.ufal.ic.p2.bikeshare.dominio.Plano;
 import br.ufal.ic.p2.bikeshare.dominio.PlanoAssinante;
 import br.ufal.ic.p2.bikeshare.dominio.PlanoAvulso;
 import br.ufal.ic.p2.bikeshare.dominio.Usuario;
 import br.ufal.ic.p2.bikeshare.excecao.usuario.UsuarioException;
+import br.ufal.ic.p2.bikeshare.excecao.estacao.EstacaoException;
 import br.ufal.ic.p2.bikeshare.persistencia.EstadoPersistido;
 import br.ufal.ic.p2.bikeshare.persistencia.RepositorioSistema;
 
@@ -14,6 +16,7 @@ import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 
 import static br.ufal.ic.p2.bikeshare.servico.ValidadorUsuario.emBranco;
 import static br.ufal.ic.p2.bikeshare.servico.ValidadorUsuario.normalizarEmail;
@@ -23,13 +26,17 @@ public class SistemaBikeShare {
     private final RepositorioSistema repositorio;
     private final ServicoAlteracaoUsuario servicoAlteracaoUsuario;
     private final Map<String, Usuario> usuarios;
+    private final Map<String, Estacao> estacoes;
     private int proximoIdUsuario;
+    private int proximoIdEstacao;
 
     public SistemaBikeShare() {
         repositorio = new RepositorioSistema();
         EstadoPersistido estado = repositorio.carregar();
         usuarios = estado.getUsuarios();
         proximoIdUsuario = estado.getProximoIdUsuario();
+        estacoes = estado.getEstacoes();
+        proximoIdEstacao = estado.getProximoIdEstacao();
         servicoAlteracaoUsuario = new ServicoAlteracaoUsuario(usuarios);
     }
 
@@ -147,10 +154,12 @@ public class SistemaBikeShare {
     public void zerar() {
         usuarios.clear();
         proximoIdUsuario = 1;
+        estacoes.clear();
+        proximoIdEstacao = 1;
     }
 
     public void salvar() {
-        repositorio.salvar(new EstadoPersistido(usuarios, proximoIdUsuario));
+        repositorio.salvar(new EstadoPersistido(usuarios, proximoIdUsuario, estacoes, proximoIdEstacao));
     }
 
     private void validarDadosComuns(String nome, String email, String senha) {
@@ -209,15 +218,78 @@ public class SistemaBikeShare {
         return "U" + proximoIdUsuario;
     }
 
+    public String criarEstacao(String nome, String endereco, String capacidade) {
+        return executarComando(() -> criarEstacaoValidada(nome, endereco, capacidade));
+    }
+
+    private String criarEstacaoValidada(String nome, String endereco, String capacidade) {
+        validarPreenchimentoEstacao(nome, "Nome nao pode ser nulo.");
+        validarPreenchimentoEstacao(endereco, "Endereco nao pode ser nulo.");
+        validarPreenchimentoEstacao(capacidade, "Capacidade nao pode ser nula.");
+
+        String capacidadeNormalizada = capacidade.trim();
+        if (!Pattern.compile("^-?\\d+$").matcher(capacidadeNormalizada).matches()) {
+            throw new EstacaoException("Capacidade deve ser numerica.");
+        }
+        int valor;
+        try {
+            valor = Integer.parseInt(capacidadeNormalizada);
+        } catch (NumberFormatException excecao) {
+            throw new EstacaoException("Capacidade deve ser numerica.");
+        }
+        if (valor <= 0) {
+            throw new EstacaoException("Capacidade deve ser positiva.");
+        }
+
+        Estacao estacao = new Estacao(idEstacaoDisponivel(), nome.trim(), endereco.trim(), valor);
+        estacoes.put(estacao.getId(), estacao);
+        proximoIdEstacao++;
+        return estacao.getId();
+    }
+
+    public int getVagasDisponiveis(String id) {
+        return buscarEstacao(id).getVagasDisponiveis();
+    }
+
+    public int getBicicletasDisponiveis(String id) {
+        return buscarEstacao(id).getBicicletasDisponiveis();
+    }
+
+    private void validarPreenchimentoEstacao(String valor, String mensagem) {
+        if (valor == null || valor.trim().isEmpty()) {
+            throw new EstacaoException(mensagem);
+        }
+    }
+
+    private Estacao buscarEstacao(String id) {
+        if (id == null || id.trim().isEmpty()) {
+            throw new EstacaoException("Identificacao da estacao nao pode ser nula.");
+        }
+        Estacao estacao = estacoes.get(id);
+        if (estacao == null) {
+            throw new EstacaoException("Estacao nao existe.");
+        }
+        return estacao;
+    }
+
+    private String idEstacaoDisponivel() {
+        return "E" + proximoIdEstacao;
+    }
+
     private <T> T executarComando(Supplier<T> comando) {
         Map<String, Usuario> usuariosAnteriores = new LinkedHashMap<>(usuarios);
         int proximoIdAnterior = proximoIdUsuario;
+        Map<String, Estacao> estacoesAnteriores = new LinkedHashMap<>(estacoes);
+        int proximoIdEstacaoAnterior = proximoIdEstacao;
         try {
             return comando.get();
         } catch (RuntimeException excecao) {
             usuarios.clear();
             usuarios.putAll(usuariosAnteriores);
             proximoIdUsuario = proximoIdAnterior;
+            estacoes.clear();
+            estacoes.putAll(estacoesAnteriores);
+            proximoIdEstacao = proximoIdEstacaoAnterior;
             throw excecao;
         }
     }
