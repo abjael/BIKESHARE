@@ -2,6 +2,7 @@ package br.ufal.ic.p2.bikeshare.persistencia;
 
 import br.ufal.ic.p2.bikeshare.excecao.BikeShareException;
 import br.ufal.ic.p2.bikeshare.dominio.Cartao;
+import br.ufal.ic.p2.bikeshare.dominio.Estacao;
 import br.ufal.ic.p2.bikeshare.dominio.PlanoAssinante;
 import br.ufal.ic.p2.bikeshare.dominio.PlanoAvulso;
 import br.ufal.ic.p2.bikeshare.dominio.PessoaFisica;
@@ -72,13 +73,24 @@ public class RepositorioSistema {
         registrarPlanos(encoder);
         registrarMetodosPagamento(encoder);
         registrarBigDecimal(encoder);
+        registrarEstacao(encoder);
     }
 
     private void registrarEstadoPersistido(XMLEncoder encoder) {
         encoder.setPersistenceDelegate(EstadoPersistido.class,
                 delegate(EstadoPersistido.class, objeto -> {
                     EstadoPersistido estado = (EstadoPersistido) objeto;
-                    return new Object[]{estado.getUsuarios(), estado.getProximoIdUsuario()};
+                    return new Object[]{estado.getUsuarios(), estado.getProximoIdUsuario(),
+                            estado.getEstacoes(), estado.getProximoIdEstacao()};
+                }));
+    }
+
+    private void registrarEstacao(XMLEncoder encoder) {
+        encoder.setPersistenceDelegate(Estacao.class,
+                delegate(Estacao.class, objeto -> {
+                    Estacao estacao = (Estacao) objeto;
+                    return new Object[]{estacao.getId(), estacao.getNome(), estacao.getEndereco(),
+                            estacao.getCapacidade()};
                 }));
     }
 

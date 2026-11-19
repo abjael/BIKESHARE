@@ -59,4 +59,16 @@ public class Facade {
     public void encerrarSistema() {
         sistema.salvar();
     }
+
+    public String criarEstacao(String nome, String endereco, String capacidade) {
+        return sistema.criarEstacao(nome, endereco, capacidade);
+    }
+
+    public int getVagasDisponiveis(String estacao) {
+        return sistema.getVagasDisponiveis(estacao);
+    }
+
+    public int getBicicletasDisponiveis(String estacao) {
+        return sistema.getBicicletasDisponiveis(estacao);
+    }
 }
