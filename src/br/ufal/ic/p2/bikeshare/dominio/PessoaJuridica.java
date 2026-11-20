@@ -5,7 +5,6 @@ import br.ufal.ic.p2.bikeshare.excecao.usuario.UsuarioException;
 import java.math.BigDecimal;
 
 public class PessoaJuridica extends Usuario {
-    private static final long serialVersionUID = 1L;
     private final String cnpj;
     private final String razaoSocial;
 

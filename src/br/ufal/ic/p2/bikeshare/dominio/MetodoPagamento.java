@@ -2,12 +2,9 @@ package br.ufal.ic.p2.bikeshare.dominio;
 
 import br.ufal.ic.p2.bikeshare.excecao.usuario.UsuarioException;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 
-public abstract class MetodoPagamento implements Serializable {
-    private static final long serialVersionUID = 1L;
-
+public abstract class MetodoPagamento {
     public abstract String getNome();
 
     public abstract String getAtributo(String atributo);

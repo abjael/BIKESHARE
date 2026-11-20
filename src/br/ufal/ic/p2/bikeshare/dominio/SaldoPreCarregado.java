@@ -4,8 +4,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 public class SaldoPreCarregado extends MetodoPagamento {
-    private static final long serialVersionUID = 1L;
-
     private final BigDecimal saldo;
 
     public SaldoPreCarregado(BigDecimal saldo) {

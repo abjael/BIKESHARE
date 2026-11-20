@@ -3,7 +3,6 @@ package br.ufal.ic.p2.bikeshare.dominio;
 import java.math.BigDecimal;
 
 public class PlanoAssinante implements Plano {
-    private static final long serialVersionUID = 1L;
     private final BigDecimal mensalidade;
 
     public PlanoAssinante(BigDecimal mensalidade) {

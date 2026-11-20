@@ -2,6 +2,8 @@ package br.ufal.ic.p2.bikeshare.persistencia;
 
 import br.ufal.ic.p2.bikeshare.excecao.BikeShareException;
 import br.ufal.ic.p2.bikeshare.dominio.Cartao;
+import br.ufal.ic.p2.bikeshare.dominio.BicicletaConvencional;
+import br.ufal.ic.p2.bikeshare.dominio.BicicletaEletrica;
 import br.ufal.ic.p2.bikeshare.dominio.Estacao;
 import br.ufal.ic.p2.bikeshare.dominio.PlanoAssinante;
 import br.ufal.ic.p2.bikeshare.dominio.PlanoAvulso;
@@ -74,6 +76,7 @@ public class RepositorioSistema {
         registrarMetodosPagamento(encoder);
         registrarBigDecimal(encoder);
         registrarEstacao(encoder);
+        registrarBicicletas(encoder);
     }
 
     private void registrarEstadoPersistido(XMLEncoder encoder) {
@@ -81,7 +84,7 @@ public class RepositorioSistema {
                 delegate(EstadoPersistido.class, objeto -> {
                     EstadoPersistido estado = (EstadoPersistido) objeto;
                     return new Object[]{estado.getUsuarios(), estado.getProximoIdUsuario(),
-                            estado.getEstacoes(), estado.getProximoIdEstacao()};
+                            estado.getEstacoes(), estado.getProximoIdEstacao(), estado.getBicicletas()};
                 }));
     }
 
@@ -90,7 +93,21 @@ public class RepositorioSistema {
                 delegate(Estacao.class, objeto -> {
                     Estacao estacao = (Estacao) objeto;
                     return new Object[]{estacao.getId(), estacao.getNome(), estacao.getEndereco(),
-                            estacao.getCapacidade()};
+                            estacao.getCapacidade(), estacao.getQuantidadeBicicletas()};
+                }));
+    }
+
+    private void registrarBicicletas(XMLEncoder encoder) {
+        encoder.setPersistenceDelegate(BicicletaConvencional.class,
+                delegate(BicicletaConvencional.class, objeto -> {
+                    BicicletaConvencional bicicleta = (BicicletaConvencional) objeto;
+                    return new Object[]{bicicleta.getId(), bicicleta.getEstacao(), bicicleta.getEstado()};
+                }));
+        encoder.setPersistenceDelegate(BicicletaEletrica.class,
+                delegate(BicicletaEletrica.class, objeto -> {
+                    BicicletaEletrica bicicleta = (BicicletaEletrica) objeto;
+                    return new Object[]{bicicleta.getId(), bicicleta.getEstacao(), bicicleta.getEstado(),
+                            bicicleta.getNivelBateria()};
                 }));
     }
 

@@ -2,12 +2,9 @@ package br.ufal.ic.p2.bikeshare.dominio;
 
 import br.ufal.ic.p2.bikeshare.excecao.usuario.UsuarioException;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 
-public abstract class Usuario implements Serializable {
-    private static final long serialVersionUID = 1L;
-
+public abstract class Usuario {
     private final String id;
     private final String nome;
     private final String email;

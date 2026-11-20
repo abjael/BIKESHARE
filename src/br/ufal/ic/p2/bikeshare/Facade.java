@@ -71,4 +71,24 @@ public class Facade {
     public int getBicicletasDisponiveis(String estacao) {
         return sistema.getBicicletasDisponiveis(estacao);
     }
+
+    public void adicionarBicicleta(String estacao, String bicicleta, String tipo) {
+        sistema.adicionarBicicleta(estacao, bicicleta, tipo);
+    }
+
+    public void adicionarBicicleta(String estacao, String bicicleta, String tipo, String nivelBateria) {
+        sistema.adicionarBicicleta(estacao, bicicleta, tipo, nivelBateria);
+    }
+
+    public void removerBicicleta(String estacao, String bicicleta) {
+        sistema.removerBicicleta(estacao, bicicleta);
+    }
+
+    public String getAtributoBicicleta(String bicicleta, String atributo) {
+        return sistema.getAtributoBicicleta(bicicleta, atributo);
+    }
+
+    public String getEstadoBicicleta(String bicicleta) {
+        return sistema.getEstadoBicicleta(bicicleta);
+    }
 }
