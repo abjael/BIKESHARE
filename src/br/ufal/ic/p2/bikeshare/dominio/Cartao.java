@@ -1,8 +1,6 @@
 package br.ufal.ic.p2.bikeshare.dominio;
 
 public class Cartao extends MetodoPagamento {
-    private static final long serialVersionUID = 1L;
-
     private final String numero;
     private final String validade;
 
