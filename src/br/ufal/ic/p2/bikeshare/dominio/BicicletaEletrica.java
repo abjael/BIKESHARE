@@ -1,5 +1,7 @@
 package br.ufal.ic.p2.bikeshare.dominio;
 
+import br.ufal.ic.p2.bikeshare.excecao.bicicleta.BicicletaException;
+
 public class BicicletaEletrica extends Bicicleta {
     private final int nivelBateria;
 
@@ -20,6 +22,21 @@ public class BicicletaEletrica extends Bicicleta {
     @Override
     public boolean estaDisponivelParaAluguel() {
         return "disponivel".equals(getEstado()) && nivelBateria >= ConfiguracaoSistema.NIVEL_MINIMO_BATERIA;
+    }
+
+    @Override
+    public void validarRetirada() {
+        if (!"disponivel".equals(getEstado())) {
+            throw new BicicletaException("Bicicleta nao esta disponivel.");
+        }
+        if (nivelBateria < ConfiguracaoSistema.NIVEL_MINIMO_BATERIA) {
+            throw new BicicletaException("Nivel de bateria insuficiente.");
+        }
+    }
+
+    @Override
+    public Bicicleta retirarDaEstacao() {
+        return new BicicletaEletrica(getId(), null, "emUso", nivelBateria);
     }
 
     @Override

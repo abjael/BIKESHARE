@@ -17,6 +17,10 @@ public class Pix extends MetodoPagamento {
     }
 
     @Override
+    public void validarPagamentoPendente() {
+    }
+
+    @Override
     public String getAtributo(String atributo) {
         if ("chavePix".equals(atributo)) {
             return chave;

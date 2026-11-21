@@ -18,7 +18,7 @@ public abstract class Bicicleta {
     }
 
     public String getEstacao() {
-        return estacao;
+        return estacao == null ? "nenhuma" : estacao;
     }
 
     public String getEstado() {
@@ -29,6 +29,10 @@ public abstract class Bicicleta {
 
     public abstract boolean estaDisponivelParaAluguel();
 
+    public abstract void validarRetirada();
+
+    public abstract Bicicleta retirarDaEstacao();
+
     public String getAtributo(String atributo) {
         if ("tipo".equals(atributo)) {
             return getTipo();
@@ -37,7 +41,7 @@ public abstract class Bicicleta {
             return estado;
         }
         if ("estacao".equals(atributo)) {
-            return estacao;
+            return getEstacao();
         }
         if (atributo == null || atributo.isEmpty()) {
             throw new BicicletaException("Atributo nao existe.");

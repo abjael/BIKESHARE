@@ -91,4 +91,12 @@ public class Facade {
     public String getEstadoBicicleta(String bicicleta) {
         return sistema.getEstadoBicicleta(bicicleta);
     }
+
+    public String retirarBicicleta(String usuario, String estacao, String bicicleta, String data) {
+        return sistema.retirarBicicleta(usuario, estacao, bicicleta, data);
+    }
+
+    public String getAtributoAluguel(String aluguel, String atributo) {
+        return sistema.getAtributoAluguel(aluguel, atributo);
+    }
 }

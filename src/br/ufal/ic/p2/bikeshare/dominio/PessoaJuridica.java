@@ -18,7 +18,13 @@ public class PessoaJuridica extends Usuario {
     public PessoaJuridica(String id, String nome, String email, String senha, String cnpj,
                           String razaoSocial, Plano plano, MetodoPagamento metodoPagamento,
                           BigDecimal saldoPreCarregado) {
-        super(id, nome, email, senha, plano, metodoPagamento, saldoPreCarregado);
+        this(id, nome, email, senha, cnpj, razaoSocial, plano, metodoPagamento, saldoPreCarregado, null);
+    }
+
+    public PessoaJuridica(String id, String nome, String email, String senha, String cnpj,
+                          String razaoSocial, Plano plano, MetodoPagamento metodoPagamento,
+                          BigDecimal saldoPreCarregado, String aluguelAtivo) {
+        super(id, nome, email, senha, plano, metodoPagamento, saldoPreCarregado, aluguelAtivo);
         this.cnpj = cnpj;
         this.razaoSocial = razaoSocial;
     }
@@ -52,8 +58,9 @@ public class PessoaJuridica extends Usuario {
 
     @Override
     protected Usuario criarCopia(String nome, String email, String senha, Plano plano,
-                                 MetodoPagamento metodoPagamento, BigDecimal saldoPreCarregado) {
+                                 MetodoPagamento metodoPagamento, BigDecimal saldoPreCarregado,
+                                 String aluguelAtivo) {
         return new PessoaJuridica(getId(), nome, email, senha, cnpj, razaoSocial, plano,
-                metodoPagamento, saldoPreCarregado);
+                metodoPagamento, saldoPreCarregado, aluguelAtivo);
     }
 }

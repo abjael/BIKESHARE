@@ -2,6 +2,7 @@ package br.ufal.ic.p2.bikeshare.persistencia;
 
 import br.ufal.ic.p2.bikeshare.excecao.BikeShareException;
 import br.ufal.ic.p2.bikeshare.dominio.Cartao;
+import br.ufal.ic.p2.bikeshare.dominio.Aluguel;
 import br.ufal.ic.p2.bikeshare.dominio.BicicletaConvencional;
 import br.ufal.ic.p2.bikeshare.dominio.BicicletaEletrica;
 import br.ufal.ic.p2.bikeshare.dominio.Estacao;
@@ -77,6 +78,7 @@ public class RepositorioSistema {
         registrarBigDecimal(encoder);
         registrarEstacao(encoder);
         registrarBicicletas(encoder);
+        registrarAluguel(encoder);
     }
 
     private void registrarEstadoPersistido(XMLEncoder encoder) {
@@ -84,7 +86,8 @@ public class RepositorioSistema {
                 delegate(EstadoPersistido.class, objeto -> {
                     EstadoPersistido estado = (EstadoPersistido) objeto;
                     return new Object[]{estado.getUsuarios(), estado.getProximoIdUsuario(),
-                            estado.getEstacoes(), estado.getProximoIdEstacao(), estado.getBicicletas()};
+                            estado.getEstacoes(), estado.getProximoIdEstacao(), estado.getBicicletas(),
+                            estado.getAlugueis(), estado.getProximoIdAluguel()};
                 }));
     }
 
@@ -111,13 +114,22 @@ public class RepositorioSistema {
                 }));
     }
 
+    private void registrarAluguel(XMLEncoder encoder) {
+        encoder.setPersistenceDelegate(Aluguel.class,
+                delegate(Aluguel.class, objeto -> {
+                    Aluguel aluguel = (Aluguel) objeto;
+                    return new Object[]{aluguel.getId(), aluguel.getUsuario(), aluguel.getBicicleta(),
+                            aluguel.getEstacaoOrigem(), aluguel.getInicioFormatado()};
+                }));
+    }
+
     private void registrarPessoaFisica(XMLEncoder encoder) {
         encoder.setPersistenceDelegate(PessoaFisica.class,
                 delegate(PessoaFisica.class, objeto -> {
                     PessoaFisica usuario = (PessoaFisica) objeto;
                     return new Object[]{usuario.getId(), usuario.getNome(), usuario.getEmail(), usuario.getSenha(),
                             usuario.getCpf(), usuario.getPlano(), usuario.getMetodoPagamento(),
-                            usuario.getSaldoPreCarregado()};
+                            usuario.getSaldoPreCarregado(), usuario.getAluguelAtivo()};
                 }));
     }
 
@@ -127,7 +139,7 @@ public class RepositorioSistema {
                     PessoaJuridica usuario = (PessoaJuridica) objeto;
                     return new Object[]{usuario.getId(), usuario.getNome(), usuario.getEmail(), usuario.getSenha(),
                             usuario.getCnpj(), usuario.getRazaoSocial(), usuario.getPlano(),
-                            usuario.getMetodoPagamento(), usuario.getSaldoPreCarregado()};
+                            usuario.getMetodoPagamento(), usuario.getSaldoPreCarregado(), usuario.getAluguelAtivo()};
                 }));
     }
 
