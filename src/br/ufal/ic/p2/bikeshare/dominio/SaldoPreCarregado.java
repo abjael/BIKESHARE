@@ -40,4 +40,17 @@ public class SaldoPreCarregado extends MetodoPagamento {
     public MetodoPagamento comSaldo(BigDecimal novoSaldo) {
         return new SaldoPreCarregado(novoSaldo);
     }
+
+    @Override
+    public MetodoPagamento cobrar(BigDecimal valor) {
+        if (saldo.compareTo(valor) < 0) {
+            throw new UsuarioException("Saldo insuficiente.");
+        }
+        return new SaldoPreCarregado(saldo.subtract(valor));
+    }
+
+    @Override
+    public BigDecimal getSaldoOu(BigDecimal saldoAnterior) {
+        return saldo;
+    }
 }

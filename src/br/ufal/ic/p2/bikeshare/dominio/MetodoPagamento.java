@@ -11,6 +11,14 @@ public abstract class MetodoPagamento {
 
     public abstract void validarPagamentoPendente();
 
+    public MetodoPagamento cobrar(BigDecimal valor) {
+        return this;
+    }
+
+    public BigDecimal getSaldoOu(BigDecimal saldoAnterior) {
+        return saldoAnterior;
+    }
+
     public MetodoPagamento comSaldo(BigDecimal saldo) {
         throw new UsuarioException("Usuario nao usa saldo pre-carregado.");
     }

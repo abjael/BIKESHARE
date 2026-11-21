@@ -2,6 +2,8 @@ package br.ufal.ic.p2.bikeshare.dominio;
 
 import br.ufal.ic.p2.bikeshare.excecao.bicicleta.BicicletaException;
 
+import java.math.BigDecimal;
+
 public class BicicletaConvencional extends Bicicleta {
     public BicicletaConvencional(String id, String estacao) {
         this(id, estacao, "disponivel");
@@ -31,6 +33,21 @@ public class BicicletaConvencional extends Bicicleta {
     @Override
     public Bicicleta retirarDaEstacao() {
         return new BicicletaConvencional(getId(), null, "emUso");
+    }
+
+    @Override
+    public BigDecimal getAdicionalPorMinuto() {
+        return BigDecimal.ZERO;
+    }
+
+    @Override
+    public Bicicleta devolverNaEstacao(String idEstacao) {
+        return new BicicletaConvencional(getId(), idEstacao);
+    }
+
+    @Override
+    public Bicicleta colocarEmManutencao(String idEstacao) {
+        return new BicicletaConvencional(getId(), idEstacao, "emManutencao");
     }
 
     @Override

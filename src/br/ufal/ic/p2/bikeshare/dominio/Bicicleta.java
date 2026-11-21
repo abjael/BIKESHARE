@@ -2,6 +2,8 @@ package br.ufal.ic.p2.bikeshare.dominio;
 
 import br.ufal.ic.p2.bikeshare.excecao.bicicleta.BicicletaException;
 
+import java.math.BigDecimal;
+
 public abstract class Bicicleta {
     private final String id;
     private final String estacao;
@@ -32,6 +34,12 @@ public abstract class Bicicleta {
     public abstract void validarRetirada();
 
     public abstract Bicicleta retirarDaEstacao();
+
+    public abstract BigDecimal getAdicionalPorMinuto();
+
+    public abstract Bicicleta devolverNaEstacao(String idEstacao);
+
+    public abstract Bicicleta colocarEmManutencao(String idEstacao);
 
     public String getAtributo(String atributo) {
         if ("tipo".equals(atributo)) {

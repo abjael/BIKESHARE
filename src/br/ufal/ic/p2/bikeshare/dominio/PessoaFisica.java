@@ -19,7 +19,14 @@ public class PessoaFisica extends Usuario {
 
     public PessoaFisica(String id, String nome, String email, String senha, String cpf, Plano plano,
                         MetodoPagamento metodoPagamento, BigDecimal saldoPreCarregado, String aluguelAtivo) {
-        super(id, nome, email, senha, plano, metodoPagamento, saldoPreCarregado, aluguelAtivo);
+        this(id, nome, email, senha, cpf, plano, metodoPagamento, saldoPreCarregado, aluguelAtivo,
+                BigDecimal.ZERO);
+    }
+
+    public PessoaFisica(String id, String nome, String email, String senha, String cpf, Plano plano,
+                        MetodoPagamento metodoPagamento, BigDecimal saldoPreCarregado, String aluguelAtivo,
+                        BigDecimal totalPendencias) {
+        super(id, nome, email, senha, plano, metodoPagamento, saldoPreCarregado, aluguelAtivo, totalPendencias);
         this.cpf = cpf;
     }
 
@@ -46,8 +53,8 @@ public class PessoaFisica extends Usuario {
     @Override
     protected Usuario criarCopia(String nome, String email, String senha, Plano plano,
                                  MetodoPagamento metodoPagamento, BigDecimal saldoPreCarregado,
-                                 String aluguelAtivo) {
+                                 String aluguelAtivo, BigDecimal totalPendencias) {
         return new PessoaFisica(getId(), nome, email, senha, cpf, plano, metodoPagamento,
-                saldoPreCarregado, aluguelAtivo);
+                saldoPreCarregado, aluguelAtivo, totalPendencias);
     }
 }

@@ -99,4 +99,8 @@ public class Facade {
     public String getAtributoAluguel(String aluguel, String atributo) {
         return sistema.getAtributoAluguel(aluguel, atributo);
     }
+
+    public void devolverBicicleta(String aluguel, String estacao, String data) {
+        sistema.devolverBicicleta(aluguel, estacao, data);
+    }
 }
