@@ -12,6 +12,7 @@ public abstract class Usuario {
     private final Plano plano;
     private final MetodoPagamento metodoPagamento;
     private final BigDecimal saldoPreCarregado;
+    private final String aluguelAtivo;
 
     protected Usuario(String id, String nome, String email, String senha, Plano plano) {
         this(id, nome, email, senha, plano, null, BigDecimal.ZERO);
@@ -19,6 +20,11 @@ public abstract class Usuario {
 
     protected Usuario(String id, String nome, String email, String senha, Plano plano,
                       MetodoPagamento metodoPagamento, BigDecimal saldoPreCarregado) {
+        this(id, nome, email, senha, plano, metodoPagamento, saldoPreCarregado, null);
+    }
+
+    protected Usuario(String id, String nome, String email, String senha, Plano plano,
+                      MetodoPagamento metodoPagamento, BigDecimal saldoPreCarregado, String aluguelAtivo) {
         this.id = id;
         this.nome = nome;
         this.email = email;
@@ -26,6 +32,7 @@ public abstract class Usuario {
         this.plano = plano;
         this.metodoPagamento = metodoPagamento;
         this.saldoPreCarregado = saldoPreCarregado;
+        this.aluguelAtivo = aluguelAtivo;
     }
 
     public String getId() {
@@ -56,32 +63,48 @@ public abstract class Usuario {
         return saldoPreCarregado;
     }
 
+    public String getAluguelAtivo() {
+        return aluguelAtivo;
+    }
+
     public Usuario comNome(String novoNome) {
-        return criarCopia(novoNome, email, senha, plano, metodoPagamento, saldoPreCarregado);
+        return criarCopia(novoNome, email, senha, plano, metodoPagamento, saldoPreCarregado, aluguelAtivo);
     }
 
     public Usuario comEmail(String novoEmail) {
-        return criarCopia(nome, novoEmail, senha, plano, metodoPagamento, saldoPreCarregado);
+        return criarCopia(nome, novoEmail, senha, plano, metodoPagamento, saldoPreCarregado, aluguelAtivo);
     }
 
     public Usuario comSenha(String novaSenha) {
-        return criarCopia(nome, email, novaSenha, plano, metodoPagamento, saldoPreCarregado);
+        return criarCopia(nome, email, novaSenha, plano, metodoPagamento, saldoPreCarregado, aluguelAtivo);
     }
 
     public Usuario comPlano(Plano novoPlano) {
-        return criarCopia(nome, email, senha, novoPlano, metodoPagamento, saldoPreCarregado);
+        return criarCopia(nome, email, senha, novoPlano, metodoPagamento, saldoPreCarregado, aluguelAtivo);
     }
 
     public Usuario comMetodoPagamento(MetodoPagamento novoMetodoPagamento) {
-        return criarCopia(nome, email, senha, plano, novoMetodoPagamento, saldoPreCarregado);
+        return criarCopia(nome, email, senha, plano, novoMetodoPagamento, saldoPreCarregado, aluguelAtivo);
     }
 
     public Usuario comSaldo(BigDecimal novoSaldo) {
         if (metodoPagamento == null) {
             throw new UsuarioException("Usuario nao usa saldo pre-carregado.");
         }
+
         MetodoPagamento pagamentoAtualizado = metodoPagamento.comSaldo(novoSaldo);
-        return criarCopia(nome, email, senha, plano, pagamentoAtualizado, novoSaldo);
+        return criarCopia(nome, email, senha, plano, pagamentoAtualizado, novoSaldo, aluguelAtivo);
+    }
+
+    public Usuario comAluguelAtivo(String novoAluguelAtivo) {
+        return criarCopia(nome, email, senha, plano, metodoPagamento, saldoPreCarregado, novoAluguelAtivo);
+    }
+
+    public void validarPagamentoPendente() {
+        if (metodoPagamento == null) {
+            throw new UsuarioException("Metodo de pagamento nao cadastrado.");
+        }
+        metodoPagamento.validarPagamentoPendente();
     }
 
     public String getAtributo(String atributo) {
@@ -117,7 +140,7 @@ public abstract class Usuario {
             case "estado":
                 return "ativo";
             case "aluguelAtivo":
-                return "nenhum";
+                return aluguelAtivo == null ? "nenhum" : aluguelAtivo;
             case "totalPendencias":
                 return "0,00";
             default:
@@ -169,7 +192,8 @@ public abstract class Usuario {
     protected abstract String getAtributoEspecifico(String atributo);
 
     protected abstract Usuario criarCopia(String nome, String email, String senha, Plano plano,
-                                          MetodoPagamento metodoPagamento, BigDecimal saldoPreCarregado);
+                                          MetodoPagamento metodoPagamento, BigDecimal saldoPreCarregado,
+                                          String aluguelAtivo);
 
     protected UsuarioException atributoInexistente() {
         return new UsuarioException("Atributo nao existe.");

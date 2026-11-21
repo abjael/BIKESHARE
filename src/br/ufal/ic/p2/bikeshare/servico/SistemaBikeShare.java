@@ -4,6 +4,7 @@ import br.ufal.ic.p2.bikeshare.dominio.PessoaFisica;
 import br.ufal.ic.p2.bikeshare.dominio.PessoaJuridica;
 import br.ufal.ic.p2.bikeshare.dominio.Estacao;
 import br.ufal.ic.p2.bikeshare.dominio.Bicicleta;
+import br.ufal.ic.p2.bikeshare.dominio.Aluguel;
 import br.ufal.ic.p2.bikeshare.dominio.Plano;
 import br.ufal.ic.p2.bikeshare.dominio.PlanoAssinante;
 import br.ufal.ic.p2.bikeshare.dominio.PlanoAvulso;
@@ -27,11 +28,14 @@ public class SistemaBikeShare {
     private final RepositorioSistema repositorio;
     private final ServicoAlteracaoUsuario servicoAlteracaoUsuario;
     private final ServicoBicicletas servicoBicicletas;
+    private final ServicoAluguel servicoAluguel;
     private final Map<String, Usuario> usuarios;
     private final Map<String, Estacao> estacoes;
     private final Map<String, Bicicleta> bicicletas;
+    private final Map<String, Aluguel> alugueis;
     private int proximoIdUsuario;
     private int proximoIdEstacao;
+    private int proximoIdAluguel;
 
     public SistemaBikeShare() {
         repositorio = new RepositorioSistema();
@@ -41,8 +45,11 @@ public class SistemaBikeShare {
         estacoes = estado.getEstacoes();
         proximoIdEstacao = estado.getProximoIdEstacao();
         bicicletas = estado.getBicicletas();
+        alugueis = estado.getAlugueis();
+        proximoIdAluguel = estado.getProximoIdAluguel();
         servicoAlteracaoUsuario = new ServicoAlteracaoUsuario(usuarios);
         servicoBicicletas = new ServicoBicicletas(estacoes, bicicletas);
+        servicoAluguel = new ServicoAluguel(usuarios, estacoes, bicicletas, alugueis);
     }
 
     public String criarPessoaFisica(String nome, String email, String senha, String tipo, String cpf,
@@ -162,11 +169,13 @@ public class SistemaBikeShare {
         estacoes.clear();
         proximoIdEstacao = 1;
         bicicletas.clear();
+        alugueis.clear();
+        proximoIdAluguel = 1;
     }
 
     public void salvar() {
         repositorio.salvar(new EstadoPersistido(usuarios, proximoIdUsuario, estacoes, proximoIdEstacao,
-                bicicletas));
+                bicicletas, alugueis, proximoIdAluguel));
     }
 
     private void validarDadosComuns(String nome, String email, String senha) {
@@ -288,6 +297,19 @@ public class SistemaBikeShare {
         return servicoBicicletas.getEstadoBicicleta(id);
     }
 
+    public String retirarBicicleta(String usuario, String estacao, String bicicleta, String data) {
+        return executarComando(() -> {
+            String idAluguel = servicoAluguel.retirarBicicleta(usuario, estacao, bicicleta,
+                    data, proximoIdAluguel);
+            proximoIdAluguel++;
+            return idAluguel;
+        });
+    }
+
+    public String getAtributoAluguel(String aluguel, String atributo) {
+        return servicoAluguel.getAtributo(aluguel, atributo);
+    }
+
     private void validarPreenchimentoEstacao(String valor, String mensagem) {
         if (valor == null || valor.trim().isEmpty()) {
             throw new EstacaoException(mensagem);
@@ -315,6 +337,8 @@ public class SistemaBikeShare {
         Map<String, Estacao> estacoesAnteriores = new LinkedHashMap<>(estacoes);
         int proximoIdEstacaoAnterior = proximoIdEstacao;
         Map<String, Bicicleta> bicicletasAnteriores = new LinkedHashMap<>(bicicletas);
+        Map<String, Aluguel> alugueisAnteriores = new LinkedHashMap<>(alugueis);
+        int proximoIdAluguelAnterior = proximoIdAluguel;
         try {
             return comando.get();
         } catch (RuntimeException excecao) {
@@ -326,6 +350,9 @@ public class SistemaBikeShare {
             proximoIdEstacao = proximoIdEstacaoAnterior;
             bicicletas.clear();
             bicicletas.putAll(bicicletasAnteriores);
+            alugueis.clear();
+            alugueis.putAll(alugueisAnteriores);
+            proximoIdAluguel = proximoIdAluguelAnterior;
             throw excecao;
         }
     }

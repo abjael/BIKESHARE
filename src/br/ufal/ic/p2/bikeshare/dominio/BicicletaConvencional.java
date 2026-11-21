@@ -22,6 +22,18 @@ public class BicicletaConvencional extends Bicicleta {
     }
 
     @Override
+    public void validarRetirada() {
+        if (!estaDisponivelParaAluguel()) {
+            throw new BicicletaException("Bicicleta nao esta disponivel.");
+        }
+    }
+
+    @Override
+    public Bicicleta retirarDaEstacao() {
+        return new BicicletaConvencional(getId(), null, "emUso");
+    }
+
+    @Override
     protected String getAtributoEspecifico(String atributo) {
         if ("nivelBateria".equals(atributo)) {
             throw new BicicletaException("Bicicleta nao possui bateria.");

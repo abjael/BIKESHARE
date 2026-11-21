@@ -9,6 +9,8 @@ public abstract class MetodoPagamento {
 
     public abstract String getAtributo(String atributo);
 
+    public abstract void validarPagamentoPendente();
+
     public MetodoPagamento comSaldo(BigDecimal saldo) {
         throw new UsuarioException("Usuario nao usa saldo pre-carregado.");
     }

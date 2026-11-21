@@ -23,6 +23,10 @@ public class Cartao extends MetodoPagamento {
     }
 
     @Override
+    public void validarPagamentoPendente() {
+    }
+
+    @Override
     public String getAtributo(String atributo) {
         if ("numeroCartao".equals(atributo)) {
             return numero;

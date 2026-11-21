@@ -1,5 +1,7 @@
 package br.ufal.ic.p2.bikeshare.dominio;
 
+import br.ufal.ic.p2.bikeshare.excecao.usuario.UsuarioException;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -17,6 +19,13 @@ public class SaldoPreCarregado extends MetodoPagamento {
     @Override
     public String getNome() {
         return "saldoPreCarregado";
+    }
+
+    @Override
+    public void validarPagamentoPendente() {
+        if (saldo.signum() <= 0) {
+            throw new UsuarioException("Saldo insuficiente.");
+        }
     }
 
     @Override
