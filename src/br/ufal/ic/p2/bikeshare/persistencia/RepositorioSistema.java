@@ -119,7 +119,9 @@ public class RepositorioSistema {
                 delegate(Aluguel.class, objeto -> {
                     Aluguel aluguel = (Aluguel) objeto;
                     return new Object[]{aluguel.getId(), aluguel.getUsuario(), aluguel.getBicicleta(),
-                            aluguel.getEstacaoOrigem(), aluguel.getInicioFormatado()};
+                            aluguel.getEstacaoOrigem(), aluguel.getInicioFormatado(), aluguel.getEstado(),
+                            aluguel.getEstacaoDestino(), aluguel.getFimFormatado(),
+                            aluguel.getValorCobrado() == null ? null : aluguel.getValorCobrado().toPlainString()};
                 }));
     }
 
@@ -129,7 +131,8 @@ public class RepositorioSistema {
                     PessoaFisica usuario = (PessoaFisica) objeto;
                     return new Object[]{usuario.getId(), usuario.getNome(), usuario.getEmail(), usuario.getSenha(),
                             usuario.getCpf(), usuario.getPlano(), usuario.getMetodoPagamento(),
-                            usuario.getSaldoPreCarregado(), usuario.getAluguelAtivo()};
+                            usuario.getSaldoPreCarregado(), usuario.getAluguelAtivo(),
+                            usuario.getTotalPendencias()};
                 }));
     }
 
@@ -139,7 +142,8 @@ public class RepositorioSistema {
                     PessoaJuridica usuario = (PessoaJuridica) objeto;
                     return new Object[]{usuario.getId(), usuario.getNome(), usuario.getEmail(), usuario.getSenha(),
                             usuario.getCnpj(), usuario.getRazaoSocial(), usuario.getPlano(),
-                            usuario.getMetodoPagamento(), usuario.getSaldoPreCarregado(), usuario.getAluguelAtivo()};
+                            usuario.getMetodoPagamento(), usuario.getSaldoPreCarregado(), usuario.getAluguelAtivo(),
+                            usuario.getTotalPendencias()};
                 }));
     }
 

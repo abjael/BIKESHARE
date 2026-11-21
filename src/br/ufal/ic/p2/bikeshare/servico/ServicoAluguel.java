@@ -2,6 +2,7 @@ package br.ufal.ic.p2.bikeshare.servico;
 
 import br.ufal.ic.p2.bikeshare.dominio.Aluguel;
 import br.ufal.ic.p2.bikeshare.dominio.Bicicleta;
+import br.ufal.ic.p2.bikeshare.dominio.ConfiguracaoSistema;
 import br.ufal.ic.p2.bikeshare.dominio.Estacao;
 import br.ufal.ic.p2.bikeshare.dominio.FormatoDataHora;
 import br.ufal.ic.p2.bikeshare.dominio.Usuario;
@@ -12,6 +13,9 @@ import br.ufal.ic.p2.bikeshare.excecao.usuario.UsuarioException;
 
 import java.time.DateTimeException;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Map;
 
 import static br.ufal.ic.p2.bikeshare.servico.ValidadorUsuario.emBranco;
@@ -32,6 +36,9 @@ final class ServicoAluguel {
 
     String retirarBicicleta(String idUsuario, String idEstacao, String idBicicleta, String data, int idAluguel) {
         Usuario usuario = buscarUsuario(idUsuario);
+        if ("inadimplente".equals(usuario.getAtributo("estado"))) {
+            throw new UsuarioException("Usuario inadimplente.");
+        }
         Estacao estacao = buscarEstacao(idEstacao);
         Bicicleta bicicleta = buscarBicicleta(idBicicleta);
         LocalDateTime inicio = validarData(data);
@@ -48,6 +55,50 @@ final class ServicoAluguel {
         usuarios.put(idUsuario, usuario.comAluguelAtivo(id));
         alugueis.put(id, aluguel);
         return id;
+    }
+
+    void devolverBicicleta(String idAluguel, String idEstacao, String data) {
+        Aluguel aluguel = buscarAluguel(idAluguel);
+        Estacao destino = buscarEstacao(idEstacao);
+        LocalDateTime fim = validarData(data);
+        if (!aluguel.estaEmAndamento()) {
+            throw new AluguelException("Aluguel nao esta em andamento.");
+        }
+        if (fim.isBefore(aluguel.getInicio())) {
+            throw new AluguelException("Data de devolucao anterior a data de retirada.");
+        }
+        if (!destino.possuiVagaDisponivel()) {
+            throw new EstacaoException("Estacao cheia.");
+        }
+
+        Usuario usuario = usuarios.get(aluguel.getUsuario());
+        Bicicleta bicicleta = bicicletas.get(aluguel.getBicicleta());
+        long minutos = ChronoUnit.MINUTES.between(aluguel.getInicio(), fim);
+        boolean expirado = minutos > ConfiguracaoSistema.MINUTOS_MAXIMOS_ALUGUEL;
+        boolean cancelado = !expirado && idEstacao.equals(aluguel.getEstacaoOrigem())
+                && minutos <= ConfiguracaoSistema.MINUTOS_CARENCIA;
+        BigDecimal valor = expirado || cancelado ? BigDecimal.ZERO : calcularValor(usuario, bicicleta, minutos);
+        Usuario usuarioAtualizado = expirado
+                ? usuario.adicionarPendencia(ConfiguracaoSistema.PENALIDADE_ATRASO)
+                : usuario.cobrar(valor);
+        usuarioAtualizado = usuarioAtualizado.comAluguelAtivo(null);
+
+        String estado = expirado ? "expirado" : cancelado ? "cancelado" : "finalizado";
+        Aluguel aluguelAtualizado = aluguel.encerrar(estado, idEstacao, fim, valor);
+        Bicicleta bicicletaAtualizada = expirado
+                ? bicicleta.colocarEmManutencao(idEstacao)
+                : bicicleta.devolverNaEstacao(idEstacao);
+
+        estacoes.put(idEstacao, destino.adicionarBicicleta());
+        bicicletas.put(aluguel.getBicicleta(), bicicletaAtualizada);
+        usuarios.put(aluguel.getUsuario(), usuarioAtualizado);
+        alugueis.put(idAluguel, aluguelAtualizado);
+    }
+
+    private BigDecimal calcularValor(Usuario usuario, Bicicleta bicicleta, long minutos) {
+        BigDecimal tarifa = usuario.getPlano().calcularTarifa(minutos);
+        BigDecimal adicionalEletrica = bicicleta.getAdicionalPorMinuto().multiply(BigDecimal.valueOf(minutos));
+        return tarifa.add(adicionalEletrica).setScale(2, RoundingMode.HALF_UP);
     }
 
     String getAtributo(String id, String atributo) {

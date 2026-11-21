@@ -3,6 +3,7 @@ package br.ufal.ic.p2.bikeshare.dominio;
 import br.ufal.ic.p2.bikeshare.excecao.aluguel.AluguelException;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 
 public class Aluguel {
@@ -19,6 +20,13 @@ public class Aluguel {
     public Aluguel(String id, String usuario, String bicicleta, String estacaoOrigem, String inicio) {
         this(id, usuario, bicicleta, estacaoOrigem, FormatoDataHora.parse(inicio),
                 "emAndamento", null, null, null);
+    }
+
+    public Aluguel(String id, String usuario, String bicicleta, String estacaoOrigem, String inicio,
+                   String estado, String estacaoDestino, String fim, String valorCobrado) {
+        this(id, usuario, bicicleta, estacaoOrigem, FormatoDataHora.parse(inicio), estado, estacaoDestino,
+                fim == null ? null : FormatoDataHora.parse(fim),
+                valorCobrado == null ? null : new BigDecimal(valorCobrado));
     }
 
     private Aluguel(String id, String usuario, String bicicleta, String estacaoOrigem, LocalDateTime inicio,
@@ -82,6 +90,10 @@ public class Aluguel {
         return "emAndamento".equals(estado);
     }
 
+    public Aluguel encerrar(String novoEstado, String destino, LocalDateTime dataFim, BigDecimal valor) {
+        return new Aluguel(id, usuario, bicicleta, estacaoOrigem, inicio, novoEstado, destino, dataFim, valor);
+    }
+
     public String getAtributo(String atributo) {
         String atributoBasico = getAtributoBasico(atributo);
         return atributoBasico == null ? getAtributoFinal(atributo) : atributoBasico;
@@ -119,6 +131,6 @@ public class Aluguel {
         if ("estacaoDestino".equals(atributo)) {
             return estacaoDestino;
         }
-        return valorCobrado.toPlainString().replace('.', ',');
+        return valorCobrado.setScale(2, RoundingMode.HALF_UP).toPlainString().replace('.', ',');
     }
 }

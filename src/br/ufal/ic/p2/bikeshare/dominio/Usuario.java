@@ -13,6 +13,7 @@ public abstract class Usuario {
     private final MetodoPagamento metodoPagamento;
     private final BigDecimal saldoPreCarregado;
     private final String aluguelAtivo;
+    private final BigDecimal totalPendencias;
 
     protected Usuario(String id, String nome, String email, String senha, Plano plano) {
         this(id, nome, email, senha, plano, null, BigDecimal.ZERO);
@@ -25,6 +26,12 @@ public abstract class Usuario {
 
     protected Usuario(String id, String nome, String email, String senha, Plano plano,
                       MetodoPagamento metodoPagamento, BigDecimal saldoPreCarregado, String aluguelAtivo) {
+        this(id, nome, email, senha, plano, metodoPagamento, saldoPreCarregado, aluguelAtivo, BigDecimal.ZERO);
+    }
+
+    protected Usuario(String id, String nome, String email, String senha, Plano plano,
+                      MetodoPagamento metodoPagamento, BigDecimal saldoPreCarregado, String aluguelAtivo,
+                      BigDecimal totalPendencias) {
         this.id = id;
         this.nome = nome;
         this.email = email;
@@ -33,6 +40,7 @@ public abstract class Usuario {
         this.metodoPagamento = metodoPagamento;
         this.saldoPreCarregado = saldoPreCarregado;
         this.aluguelAtivo = aluguelAtivo;
+        this.totalPendencias = totalPendencias;
     }
 
     public String getId() {
@@ -60,31 +68,40 @@ public abstract class Usuario {
     }
 
     public BigDecimal getSaldoPreCarregado() {
-        return saldoPreCarregado;
+        return metodoPagamento == null ? saldoPreCarregado : metodoPagamento.getSaldoOu(saldoPreCarregado);
     }
 
     public String getAluguelAtivo() {
         return aluguelAtivo;
     }
 
+    public BigDecimal getTotalPendencias() {
+        return totalPendencias;
+    }
+
     public Usuario comNome(String novoNome) {
-        return criarCopia(novoNome, email, senha, plano, metodoPagamento, saldoPreCarregado, aluguelAtivo);
+        return criarCopia(novoNome, email, senha, plano, metodoPagamento, saldoPreCarregado, aluguelAtivo,
+                totalPendencias);
     }
 
     public Usuario comEmail(String novoEmail) {
-        return criarCopia(nome, novoEmail, senha, plano, metodoPagamento, saldoPreCarregado, aluguelAtivo);
+        return criarCopia(nome, novoEmail, senha, plano, metodoPagamento, saldoPreCarregado, aluguelAtivo,
+                totalPendencias);
     }
 
     public Usuario comSenha(String novaSenha) {
-        return criarCopia(nome, email, novaSenha, plano, metodoPagamento, saldoPreCarregado, aluguelAtivo);
+        return criarCopia(nome, email, novaSenha, plano, metodoPagamento, saldoPreCarregado, aluguelAtivo,
+                totalPendencias);
     }
 
     public Usuario comPlano(Plano novoPlano) {
-        return criarCopia(nome, email, senha, novoPlano, metodoPagamento, saldoPreCarregado, aluguelAtivo);
+        return criarCopia(nome, email, senha, novoPlano, metodoPagamento, saldoPreCarregado, aluguelAtivo,
+                totalPendencias);
     }
 
     public Usuario comMetodoPagamento(MetodoPagamento novoMetodoPagamento) {
-        return criarCopia(nome, email, senha, plano, novoMetodoPagamento, saldoPreCarregado, aluguelAtivo);
+        return criarCopia(nome, email, senha, plano, novoMetodoPagamento, saldoPreCarregado, aluguelAtivo,
+                totalPendencias);
     }
 
     public Usuario comSaldo(BigDecimal novoSaldo) {
@@ -93,11 +110,24 @@ public abstract class Usuario {
         }
 
         MetodoPagamento pagamentoAtualizado = metodoPagamento.comSaldo(novoSaldo);
-        return criarCopia(nome, email, senha, plano, pagamentoAtualizado, novoSaldo, aluguelAtivo);
+        return criarCopia(nome, email, senha, plano, pagamentoAtualizado, novoSaldo, aluguelAtivo, totalPendencias);
     }
 
     public Usuario comAluguelAtivo(String novoAluguelAtivo) {
-        return criarCopia(nome, email, senha, plano, metodoPagamento, saldoPreCarregado, novoAluguelAtivo);
+        return criarCopia(nome, email, senha, plano, metodoPagamento, saldoPreCarregado, novoAluguelAtivo,
+                totalPendencias);
+    }
+
+    public Usuario cobrar(BigDecimal valor) {
+        MetodoPagamento pagamentoAtualizado = metodoPagamento.cobrar(valor);
+        BigDecimal saldoAtualizado = pagamentoAtualizado.getSaldoOu(saldoPreCarregado);
+        return criarCopia(nome, email, senha, plano, pagamentoAtualizado, saldoAtualizado, aluguelAtivo,
+                totalPendencias);
+    }
+
+    public Usuario adicionarPendencia(BigDecimal valor) {
+        return criarCopia(nome, email, senha, plano, metodoPagamento, saldoPreCarregado, aluguelAtivo,
+                totalPendencias.add(valor));
     }
 
     public void validarPagamentoPendente() {
@@ -138,11 +168,12 @@ public abstract class Usuario {
             case "tipo":
                 return getTipo();
             case "estado":
-                return "ativo";
+                return totalPendencias.signum() > 0 ? "inadimplente" : "ativo";
             case "aluguelAtivo":
                 return aluguelAtivo == null ? "nenhum" : aluguelAtivo;
             case "totalPendencias":
-                return "0,00";
+                return totalPendencias.setScale(2, java.math.RoundingMode.HALF_UP)
+                        .toPlainString().replace('.', ',');
             default:
                 return null;
         }
@@ -193,7 +224,7 @@ public abstract class Usuario {
 
     protected abstract Usuario criarCopia(String nome, String email, String senha, Plano plano,
                                           MetodoPagamento metodoPagamento, BigDecimal saldoPreCarregado,
-                                          String aluguelAtivo);
+                                          String aluguelAtivo, BigDecimal totalPendencias);
 
     protected UsuarioException atributoInexistente() {
         return new UsuarioException("Atributo nao existe.");

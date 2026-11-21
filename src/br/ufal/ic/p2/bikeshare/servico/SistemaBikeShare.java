@@ -310,6 +310,13 @@ public class SistemaBikeShare {
         return servicoAluguel.getAtributo(aluguel, atributo);
     }
 
+    public void devolverBicicleta(String aluguel, String estacao, String data) {
+        executarComando(() -> {
+            servicoAluguel.devolverBicicleta(aluguel, estacao, data);
+            return null;
+        });
+    }
+
     private void validarPreenchimentoEstacao(String valor, String mensagem) {
         if (valor == null || valor.trim().isEmpty()) {
             throw new EstacaoException(mensagem);

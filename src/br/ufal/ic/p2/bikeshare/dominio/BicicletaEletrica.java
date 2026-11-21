@@ -2,6 +2,8 @@ package br.ufal.ic.p2.bikeshare.dominio;
 
 import br.ufal.ic.p2.bikeshare.excecao.bicicleta.BicicletaException;
 
+import java.math.BigDecimal;
+
 public class BicicletaEletrica extends Bicicleta {
     private final int nivelBateria;
 
@@ -37,6 +39,21 @@ public class BicicletaEletrica extends Bicicleta {
     @Override
     public Bicicleta retirarDaEstacao() {
         return new BicicletaEletrica(getId(), null, "emUso", nivelBateria);
+    }
+
+    @Override
+    public BigDecimal getAdicionalPorMinuto() {
+        return ConfiguracaoSistema.ADICIONAL_ELETRICA_POR_MINUTO;
+    }
+
+    @Override
+    public Bicicleta devolverNaEstacao(String idEstacao) {
+        return new BicicletaEletrica(getId(), idEstacao, nivelBateria);
+    }
+
+    @Override
+    public Bicicleta colocarEmManutencao(String idEstacao) {
+        return new BicicletaEletrica(getId(), idEstacao, "emManutencao", nivelBateria);
     }
 
     @Override
