@@ -4,6 +4,7 @@ import br.ufal.ic.p2.bikeshare.excecao.usuario.UsuarioException;
 
 import java.math.BigDecimal;
 
+
 public abstract class Usuario {
     private final String id;
     private final String nome;
@@ -16,17 +17,7 @@ public abstract class Usuario {
     private final BigDecimal totalPendencias;
 
     protected Usuario(String id, String nome, String email, String senha, Plano plano) {
-        this(id, nome, email, senha, plano, null, BigDecimal.ZERO);
-    }
-
-    protected Usuario(String id, String nome, String email, String senha, Plano plano,
-                      MetodoPagamento metodoPagamento, BigDecimal saldoPreCarregado) {
-        this(id, nome, email, senha, plano, metodoPagamento, saldoPreCarregado, null);
-    }
-
-    protected Usuario(String id, String nome, String email, String senha, Plano plano,
-                      MetodoPagamento metodoPagamento, BigDecimal saldoPreCarregado, String aluguelAtivo) {
-        this(id, nome, email, senha, plano, metodoPagamento, saldoPreCarregado, aluguelAtivo, BigDecimal.ZERO);
+        this(id, nome, email, senha, plano, null, BigDecimal.ZERO, null, BigDecimal.ZERO);
     }
 
     protected Usuario(String id, String nome, String email, String senha, Plano plano,
@@ -79,6 +70,14 @@ public abstract class Usuario {
         return totalPendencias;
     }
 
+    public boolean possuiAluguelAtivo() {
+        return aluguelAtivo != null;
+    }
+
+    public boolean estaInadimplente() {
+        return totalPendencias.signum() > 0;
+    }
+
     public Usuario comNome(String novoNome) {
         return criarCopia(novoNome, email, senha, plano, metodoPagamento, saldoPreCarregado, aluguelAtivo,
                 totalPendencias);
@@ -108,7 +107,6 @@ public abstract class Usuario {
         if (metodoPagamento == null) {
             throw new UsuarioException("Usuario nao usa saldo pre-carregado.");
         }
-
         MetodoPagamento pagamentoAtualizado = metodoPagamento.comSaldo(novoSaldo);
         return criarCopia(nome, email, senha, plano, pagamentoAtualizado, novoSaldo, aluguelAtivo, totalPendencias);
     }
@@ -130,6 +128,7 @@ public abstract class Usuario {
                 totalPendencias.add(valor));
     }
 
+    
     public void validarPagamentoPendente() {
         if (metodoPagamento == null) {
             throw new UsuarioException("Metodo de pagamento nao cadastrado.");
@@ -137,6 +136,7 @@ public abstract class Usuario {
         metodoPagamento.validarPagamentoPendente();
     }
 
+    
     public String getAtributo(String atributo) {
         String valorComum = getAtributoComum(atributo);
         if (valorComum != null) {
@@ -153,11 +153,15 @@ public abstract class Usuario {
         if (atributo == null) {
             return null;
         }
-        String atributoBasico = getAtributoBasico(atributo);
-        return atributoBasico != null ? atributoBasico : getAtributoDoPlano(atributo);
+        String cadastral = getAtributoCadastral(atributo);
+        if (cadastral != null) {
+            return cadastral;
+        }
+        String situacao = getAtributoSituacao(atributo);
+        return situacao != null ? situacao : getAtributoDoPlano(atributo);
     }
 
-    private String getAtributoBasico(String atributo) {
+    private String getAtributoCadastral(String atributo) {
         switch (atributo) {
             case "nome":
                 return nome;
@@ -167,13 +171,19 @@ public abstract class Usuario {
                 return senha;
             case "tipo":
                 return getTipo();
+            default:
+                return null;
+        }
+    }
+
+    private String getAtributoSituacao(String atributo) {
+        switch (atributo) {
             case "estado":
-                return totalPendencias.signum() > 0 ? "inadimplente" : "ativo";
+                return estaInadimplente() ? "inadimplente" : "ativo";
             case "aluguelAtivo":
-                return aluguelAtivo == null ? "nenhum" : aluguelAtivo;
+                return possuiAluguelAtivo() ? aluguelAtivo : "nenhum";
             case "totalPendencias":
-                return totalPendencias.setScale(2, java.math.RoundingMode.HALF_UP)
-                        .toPlainString().replace('.', ',');
+                return FormatoMoeda.formatar(totalPendencias);
             default:
                 return null;
         }
@@ -187,7 +197,7 @@ public abstract class Usuario {
             return null;
         }
         if (metodoPagamento == null) {
-            throw metodoNaoConfigurado(atributo);
+            throw MetodoPagamento.atributoNaoSuportado(atributo);
         }
         return metodoPagamento.getAtributo(atributo);
     }
@@ -195,16 +205,6 @@ public abstract class Usuario {
     private boolean ehAtributoDePagamento(String atributo) {
         return "numeroCartao".equals(atributo) || "validadeCartao".equals(atributo)
                 || "chavePix".equals(atributo) || "saldo".equals(atributo);
-    }
-
-    private UsuarioException metodoNaoConfigurado(String atributo) {
-        if ("numeroCartao".equals(atributo) || "validadeCartao".equals(atributo)) {
-            return new UsuarioException("Usuario nao usa cartao.");
-        }
-        if ("chavePix".equals(atributo)) {
-            return new UsuarioException("Usuario nao usa pix.");
-        }
-        return new UsuarioException("Usuario nao usa saldo pre-carregado.");
     }
 
     private String getAtributoDoPlano(String atributo) {

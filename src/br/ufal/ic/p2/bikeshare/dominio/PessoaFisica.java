@@ -13,17 +13,6 @@ public class PessoaFisica extends Usuario {
     }
 
     public PessoaFisica(String id, String nome, String email, String senha, String cpf, Plano plano,
-                        MetodoPagamento metodoPagamento, BigDecimal saldoPreCarregado) {
-        this(id, nome, email, senha, cpf, plano, metodoPagamento, saldoPreCarregado, null);
-    }
-
-    public PessoaFisica(String id, String nome, String email, String senha, String cpf, Plano plano,
-                        MetodoPagamento metodoPagamento, BigDecimal saldoPreCarregado, String aluguelAtivo) {
-        this(id, nome, email, senha, cpf, plano, metodoPagamento, saldoPreCarregado, aluguelAtivo,
-                BigDecimal.ZERO);
-    }
-
-    public PessoaFisica(String id, String nome, String email, String senha, String cpf, Plano plano,
                         MetodoPagamento metodoPagamento, BigDecimal saldoPreCarregado, String aluguelAtivo,
                         BigDecimal totalPendencias) {
         super(id, nome, email, senha, plano, metodoPagamento, saldoPreCarregado, aluguelAtivo, totalPendencias);

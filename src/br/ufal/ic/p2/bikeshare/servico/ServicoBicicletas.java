@@ -7,27 +7,24 @@ import br.ufal.ic.p2.bikeshare.dominio.Estacao;
 import br.ufal.ic.p2.bikeshare.excecao.bicicleta.BicicletaException;
 import br.ufal.ic.p2.bikeshare.excecao.estacao.EstacaoException;
 
-import java.util.Map;
-import java.util.regex.Pattern;
+import static br.ufal.ic.p2.bikeshare.servico.ValidadorEntrada.emBranco;
 
-import static br.ufal.ic.p2.bikeshare.servico.ValidadorUsuario.emBranco;
 
 final class ServicoBicicletas {
-    private static final Pattern NIVEL_BATERIA_NUMERICO = Pattern.compile("^-?\\d+$");
+    private static final int BATERIA_MINIMA = 0;
+    private static final int BATERIA_MAXIMA = 100;
 
-    private final Map<String, Estacao> estacoes;
-    private final Map<String, Bicicleta> bicicletas;
+    private final EstadoSistema estado;
 
-    ServicoBicicletas(Map<String, Estacao> estacoes, Map<String, Bicicleta> bicicletas) {
-        this.estacoes = estacoes;
-        this.bicicletas = bicicletas;
+    ServicoBicicletas(EstadoSistema estado) {
+        this.estado = estado;
     }
 
     int getBicicletasDisponiveis(String idEstacao) {
-        buscarEstacao(idEstacao);
+        estado.buscarEstacao(idEstacao);
         int disponiveis = 0;
-        for (Bicicleta bicicleta : bicicletas.values()) {
-            if (idEstacao.equals(bicicleta.getEstacao()) && bicicleta.estaDisponivelParaAluguel()) {
+        for (Bicicleta bicicleta : estado.getBicicletas()) {
+            if (bicicleta.estaNaEstacao(idEstacao) && bicicleta.estaDisponivelParaAluguel()) {
                 disponiveis++;
             }
         }
@@ -35,35 +32,37 @@ final class ServicoBicicletas {
     }
 
     void adicionarBicicleta(String idEstacao, String idBicicleta, String tipo, String nivelBateria) {
-        Estacao estacao = buscarEstacao(idEstacao);
-        validarIdBicicleta(idBicicleta);
-        if (bicicletas.containsKey(idBicicleta)) {
+        Estacao estacao = estado.buscarEstacao(idEstacao);
+        if (emBranco(idBicicleta)) {
+            throw new BicicletaException("Identificacao da bicicleta nao pode ser nula.");
+        }
+        if (estado.existeBicicleta(idBicicleta)) {
             throw new BicicletaException("Bicicleta ja existe.");
         }
         Bicicleta bicicleta = criarBicicleta(idEstacao, idBicicleta, tipo, nivelBateria);
         if (!estacao.possuiVagaDisponivel()) {
             throw new EstacaoException("Estacao sem vagas disponiveis.");
         }
-        bicicletas.put(idBicicleta, bicicleta);
-        estacoes.put(idEstacao, estacao.adicionarBicicleta());
+        estado.atualizar(bicicleta);
+        estado.atualizar(estacao.adicionarBicicleta());
     }
 
     void removerBicicleta(String idEstacao, String idBicicleta) {
-        Estacao estacao = buscarEstacao(idEstacao);
-        Bicicleta bicicleta = buscarBicicleta(idBicicleta);
-        if (!idEstacao.equals(bicicleta.getEstacao())) {
+        Estacao estacao = estado.buscarEstacao(idEstacao);
+        Bicicleta bicicleta = estado.buscarBicicleta(idBicicleta);
+        if (!bicicleta.estaNaEstacao(idEstacao)) {
             throw new BicicletaException("Bicicleta nao esta nesta estacao.");
         }
-        bicicletas.remove(idBicicleta);
-        estacoes.put(idEstacao, estacao.removerBicicleta());
+        estado.removerBicicleta(idBicicleta);
+        estado.atualizar(estacao.removerBicicleta());
     }
 
     String getAtributoBicicleta(String id, String atributo) {
-        return buscarBicicleta(id).getAtributo(atributo);
+        return estado.buscarBicicleta(id).getAtributo(atributo);
     }
 
     String getEstadoBicicleta(String id) {
-        return buscarBicicleta(id).getEstado();
+        return estado.buscarBicicleta(id).getEstado();
     }
 
     private Bicicleta criarBicicleta(String idEstacao, String id, String tipo, String nivelBateria) {
@@ -83,45 +82,13 @@ final class ServicoBicicletas {
         if (emBranco(nivelBateria)) {
             throw new BicicletaException("Nivel de bateria nao pode ser nulo.");
         }
-        String nivelNormalizado = nivelBateria.trim();
-        if (!NIVEL_BATERIA_NUMERICO.matcher(nivelNormalizado).matches()) {
+        Integer nivel = ValidadorEntrada.converterInteiro(nivelBateria);
+        if (nivel == null) {
             throw new BicicletaException("Nivel de bateria deve ser numerico.");
         }
-        int nivel;
-        try {
-            nivel = Integer.parseInt(nivelNormalizado);
-        } catch (NumberFormatException excecao) {
-            throw new BicicletaException("Nivel de bateria deve ser numerico.");
-        }
-        if (nivel < 0 || nivel > 100) {
+        if (nivel < BATERIA_MINIMA || nivel > BATERIA_MAXIMA) {
             throw new BicicletaException("Nivel de bateria deve estar entre 0 e 100.");
         }
         return nivel;
-    }
-
-    private void validarIdBicicleta(String id) {
-        if (emBranco(id)) {
-            throw new BicicletaException("Identificacao da bicicleta nao pode ser nula.");
-        }
-    }
-
-    private Bicicleta buscarBicicleta(String id) {
-        validarIdBicicleta(id);
-        Bicicleta bicicleta = bicicletas.get(id);
-        if (bicicleta == null) {
-            throw new BicicletaException("Bicicleta nao existe.");
-        }
-        return bicicleta;
-    }
-
-    private Estacao buscarEstacao(String id) {
-        if (emBranco(id)) {
-            throw new EstacaoException("Identificacao da estacao nao pode ser nula.");
-        }
-        Estacao estacao = estacoes.get(id);
-        if (estacao == null) {
-            throw new EstacaoException("Estacao nao existe.");
-        }
-        return estacao;
     }
 }

@@ -3,10 +3,16 @@ package br.ufal.ic.p2.bikeshare.dominio;
 import br.ufal.ic.p2.bikeshare.excecao.aluguel.AluguelException;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+
 
 public class Aluguel {
+    public static final String EM_ANDAMENTO = "emAndamento";
+    public static final String FINALIZADO = "finalizado";
+    public static final String CANCELADO = "cancelado";
+    public static final String EXPIRADO = "expirado";
+
     private final String id;
     private final String usuario;
     private final String bicicleta;
@@ -17,11 +23,11 @@ public class Aluguel {
     private final LocalDateTime fim;
     private final BigDecimal valorCobrado;
 
-    public Aluguel(String id, String usuario, String bicicleta, String estacaoOrigem, String inicio) {
-        this(id, usuario, bicicleta, estacaoOrigem, FormatoDataHora.parse(inicio),
-                "emAndamento", null, null, null);
+    public Aluguel(String id, String usuario, String bicicleta, String estacaoOrigem, LocalDateTime inicio) {
+        this(id, usuario, bicicleta, estacaoOrigem, inicio, EM_ANDAMENTO, null, null, null);
     }
 
+    
     public Aluguel(String id, String usuario, String bicicleta, String estacaoOrigem, String inicio,
                    String estado, String estacaoDestino, String fim, String valorCobrado) {
         this(id, usuario, bicicleta, estacaoOrigem, FormatoDataHora.parse(inicio), estado, estacaoDestino,
@@ -74,10 +80,6 @@ public class Aluguel {
         return estacaoDestino;
     }
 
-    public LocalDateTime getFim() {
-        return fim;
-    }
-
     public String getFimFormatado() {
         return fim == null ? null : FormatoDataHora.formatar(fim);
     }
@@ -87,7 +89,16 @@ public class Aluguel {
     }
 
     public boolean estaEmAndamento() {
-        return "emAndamento".equals(estado);
+        return EM_ANDAMENTO.equals(estado);
+    }
+
+    public long minutosAte(LocalDateTime dataFim) {
+        return ChronoUnit.MINUTES.between(inicio, dataFim);
+    }
+
+    
+    public boolean devolvidoNaCarencia(String idEstacao, long minutos) {
+        return idEstacao.equals(estacaoOrigem) && minutos <= ConfiguracaoSistema.getMinutosCarencia();
     }
 
     public Aluguel encerrar(String novoEstado, String destino, LocalDateTime dataFim, BigDecimal valor) {
@@ -131,6 +142,6 @@ public class Aluguel {
         if ("estacaoDestino".equals(atributo)) {
             return estacaoDestino;
         }
-        return valorCobrado.setScale(2, RoundingMode.HALF_UP).toPlainString().replace('.', ',');
+        return FormatoMoeda.formatar(valorCobrado);
     }
 }

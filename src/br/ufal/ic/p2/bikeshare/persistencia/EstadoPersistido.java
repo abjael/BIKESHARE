@@ -5,8 +5,10 @@ import br.ufal.ic.p2.bikeshare.dominio.Bicicleta;
 import br.ufal.ic.p2.bikeshare.dominio.Aluguel;
 import br.ufal.ic.p2.bikeshare.dominio.Usuario;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
 
 public class EstadoPersistido {
     private final LinkedHashMap<String, Usuario> usuarios;
@@ -18,19 +20,19 @@ public class EstadoPersistido {
     private final int proximoIdAluguel;
 
     public EstadoPersistido(Map<String, Usuario> usuarios, int proximoIdUsuario) {
-        this(usuarios, proximoIdUsuario, java.util.Collections.emptyMap(), 1);
+        this(usuarios, proximoIdUsuario, Collections.emptyMap(), 1);
     }
 
     public EstadoPersistido(Map<String, Usuario> usuarios, int proximoIdUsuario,
                             Map<String, Estacao> estacoes, int proximoIdEstacao) {
-        this(usuarios, proximoIdUsuario, estacoes, proximoIdEstacao, java.util.Collections.emptyMap());
+        this(usuarios, proximoIdUsuario, estacoes, proximoIdEstacao, Collections.emptyMap());
     }
 
     public EstadoPersistido(Map<String, Usuario> usuarios, int proximoIdUsuario,
                             Map<String, Estacao> estacoes, int proximoIdEstacao,
                             Map<String, Bicicleta> bicicletas) {
         this(usuarios, proximoIdUsuario, estacoes, proximoIdEstacao, bicicletas,
-                java.util.Collections.emptyMap(), 1);
+                Collections.emptyMap(), 1);
     }
 
     public EstadoPersistido(Map<String, Usuario> usuarios, int proximoIdUsuario,
@@ -44,6 +46,12 @@ public class EstadoPersistido {
         this.bicicletas = new LinkedHashMap<>(bicicletas);
         this.alugueis = new LinkedHashMap<>(alugueis);
         this.proximoIdAluguel = proximoIdAluguel;
+    }
+
+    
+    public static EstadoPersistido vazio() {
+        return new EstadoPersistido(Collections.emptyMap(), 1, Collections.emptyMap(), 1,
+                Collections.emptyMap(), Collections.emptyMap(), 1);
     }
 
     public Map<String, Usuario> getUsuarios() {

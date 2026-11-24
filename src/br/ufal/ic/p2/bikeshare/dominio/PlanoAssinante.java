@@ -33,7 +33,7 @@ public class PlanoAssinante implements Plano {
 
     @Override
     public BigDecimal calcularTarifa(long minutos) {
-        long minutosExcedentes = Math.max(0, minutos - ConfiguracaoSistema.MINUTOS_FRANQUIA_ASSINANTE);
-        return ConfiguracaoSistema.TARIFA_EXCEDENTE_ASSINANTE.multiply(BigDecimal.valueOf(minutosExcedentes));
+        long minutosExcedentes = Math.max(0, minutos - ConfiguracaoSistema.getMinutosFranquiaAssinante());
+        return ConfiguracaoSistema.getTarifaExcedenteAssinante().multiply(BigDecimal.valueOf(minutosExcedentes));
     }
 }

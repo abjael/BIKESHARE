@@ -23,7 +23,8 @@ public abstract class MetodoPagamento {
         throw new UsuarioException("Usuario nao usa saldo pre-carregado.");
     }
 
-    protected UsuarioException atributoNaoSuportado(String atributo) {
+    
+    public static UsuarioException atributoNaoSuportado(String atributo) {
         if ("numeroCartao".equals(atributo) || "validadeCartao".equals(atributo)) {
             return new UsuarioException("Usuario nao usa cartao.");
         }

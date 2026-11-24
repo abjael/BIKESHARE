@@ -1,5 +1,6 @@
 package br.ufal.ic.p2.bikeshare.dominio;
 
+
 public class Estacao {
     private final String id;
     private final String nome;
