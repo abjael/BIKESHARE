@@ -17,6 +17,6 @@ public class PlanoAvulso implements Plano {
 
     @Override
     public BigDecimal calcularTarifa(long minutos) {
-        return ConfiguracaoSistema.TARIFA_POR_MINUTO.multiply(BigDecimal.valueOf(minutos));
+        return ConfiguracaoSistema.getTarifaPorMinuto().multiply(BigDecimal.valueOf(minutos));
     }
 }

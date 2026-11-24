@@ -3,7 +3,6 @@ package br.ufal.ic.p2.bikeshare.dominio;
 import br.ufal.ic.p2.bikeshare.excecao.usuario.UsuarioException;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 public class SaldoPreCarregado extends MetodoPagamento {
     private final BigDecimal saldo;
@@ -31,7 +30,7 @@ public class SaldoPreCarregado extends MetodoPagamento {
     @Override
     public String getAtributo(String atributo) {
         if ("saldo".equals(atributo)) {
-            return saldo.setScale(2, RoundingMode.HALF_UP).toPlainString().replace('.', ',');
+            return FormatoMoeda.formatar(saldo);
         }
         throw atributoNaoSuportado(atributo);
     }

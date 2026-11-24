@@ -4,38 +4,35 @@ import br.ufal.ic.p2.bikeshare.dominio.Cartao;
 import br.ufal.ic.p2.bikeshare.dominio.MetodoPagamento;
 import br.ufal.ic.p2.bikeshare.dominio.Pix;
 import br.ufal.ic.p2.bikeshare.dominio.Plano;
-import br.ufal.ic.p2.bikeshare.dominio.PlanoAssinante;
-import br.ufal.ic.p2.bikeshare.dominio.PlanoAvulso;
 import br.ufal.ic.p2.bikeshare.dominio.SaldoPreCarregado;
 import br.ufal.ic.p2.bikeshare.dominio.Usuario;
 import br.ufal.ic.p2.bikeshare.excecao.usuario.UsuarioException;
 
 import java.math.BigDecimal;
-import java.util.Map;
 import java.util.regex.Pattern;
 
-import static br.ufal.ic.p2.bikeshare.servico.ValidadorUsuario.emBranco;
+import static br.ufal.ic.p2.bikeshare.servico.ValidadorEntrada.emBranco;
 import static br.ufal.ic.p2.bikeshare.servico.ValidadorUsuario.validarPreenchimento;
+
 
 final class ServicoAlteracaoUsuario {
     private static final Pattern VALIDADE_CARTAO = Pattern.compile("^(0[1-9]|1[0-2])/\\d{4}$");
-    private static final BigDecimal MENSALIDADE_PADRAO = BigDecimal.valueOf(30);
 
-    private final Map<String, Usuario> usuarios;
+    private final EstadoSistema estado;
 
-    ServicoAlteracaoUsuario(Map<String, Usuario> usuarios) {
-        this.usuarios = usuarios;
+    ServicoAlteracaoUsuario(EstadoSistema estado) {
+        this.estado = estado;
     }
 
-    Usuario alterar(Usuario usuario, String atributo, String valor, String valor1,
+    Usuario alterar(Usuario usuario, String atributo, String valor, String tipoPagamento,
                     String numero, String validade, String chave) {
         if (atributo == null) {
             throw new UsuarioException("Atributo nao pode ser alterado.");
         }
-        return alterarAtributo(usuario, atributo, valor, valor1, numero, validade, chave);
+        return alterarAtributo(usuario, atributo, valor, tipoPagamento, numero, validade, chave);
     }
 
-    private Usuario alterarAtributo(Usuario usuario, String atributo, String valor, String valor1,
+    private Usuario alterarAtributo(Usuario usuario, String atributo, String valor, String tipoPagamento,
                                     String numero, String validade, String chave) {
         switch (atributo) {
             case "nome":
@@ -47,7 +44,7 @@ final class ServicoAlteracaoUsuario {
             case "plano":
                 return usuario.comPlano(alterarPlano(usuario.getPlano(), valor));
             case "metodoPagamento":
-                return usuario.comMetodoPagamento(criarMetodoPagamento(usuario, valor1, numero, validade, chave));
+                return usuario.comMetodoPagamento(criarMetodoPagamento(usuario, tipoPagamento, numero, validade, chave));
             case "saldo":
                 return alterarSaldo(usuario, valor);
             default:
@@ -67,12 +64,9 @@ final class ServicoAlteracaoUsuario {
 
     private String validarEmail(Usuario usuario, String email) {
         String emailNormalizado = ValidadorUsuario.validarEmail(email);
-        for (Usuario existente : usuarios.values()) {
-            if (!existente.getId().equals(usuario.getId())
-                    && ValidadorUsuario.normalizarEmail(existente.getEmail())
-                    .equals(ValidadorUsuario.normalizarEmail(emailNormalizado))) {
-                throw new UsuarioException("Email ja cadastrado.");
-            }
+        Usuario existente = estado.buscarUsuarioPorEmail(emailNormalizado);
+        if (existente != null && !existente.getId().equals(usuario.getId())) {
+            throw new UsuarioException("Email ja cadastrado.");
         }
         return emailNormalizado;
     }
@@ -81,13 +75,7 @@ final class ServicoAlteracaoUsuario {
         if (planoAtual.getNome().equals(nomePlano)) {
             return planoAtual;
         }
-        if ("avulso".equals(nomePlano)) {
-            return new PlanoAvulso();
-        }
-        if ("assinante".equals(nomePlano)) {
-            return new PlanoAssinante(MENSALIDADE_PADRAO);
-        }
-        throw new UsuarioException("Plano invalido.");
+        return FabricaPlano.criarComMensalidadePadrao(nomePlano);
     }
 
     private MetodoPagamento criarMetodoPagamento(Usuario usuario, String tipo, String numero,
@@ -145,11 +133,10 @@ final class ServicoAlteracaoUsuario {
         if (emBranco(valor)) {
             throw new UsuarioException("Valor nao pode ser nulo.");
         }
-        String valorNormalizado = valor.trim();
-        if (!ValidadorUsuario.VALOR_NUMERICO.matcher(valorNormalizado).matches()) {
+        BigDecimal valorNumerico = ValidadorEntrada.converterDecimal(valor);
+        if (valorNumerico == null) {
             throw new UsuarioException("Valor deve ser numerico.");
         }
-        BigDecimal valorNumerico = new BigDecimal(valorNormalizado.replace(',', '.'));
         if (valorNumerico.signum() <= 0) {
             throw new UsuarioException("Valor deve ser positivo.");
         }

@@ -27,13 +27,14 @@ import java.nio.file.StandardCopyOption;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
+
 public class RepositorioSistema {
     private static final File ARQUIVO = new File("bikeshare_data.xml");
     private static final File ARQUIVO_TEMPORARIO = new File("bikeshare_data.xml.tmp");
 
     public EstadoPersistido carregar() {
         if (!ARQUIVO.exists()) {
-            return new EstadoPersistido(java.util.Collections.emptyMap(), 1);
+            return EstadoPersistido.vazio();
         }
         AtomicReference<Exception> erroLeitura = new AtomicReference<>();
         try (XMLDecoder entrada = new XMLDecoder(new FileInputStream(ARQUIVO), null, erroLeitura::set)) {

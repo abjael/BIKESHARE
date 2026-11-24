@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 
 public class BicicletaConvencional extends Bicicleta {
     public BicicletaConvencional(String id, String estacao) {
-        this(id, estacao, "disponivel");
+        this(id, estacao, DISPONIVEL);
     }
 
     public BicicletaConvencional(String id, String estacao, String estado) {
@@ -19,35 +19,13 @@ public class BicicletaConvencional extends Bicicleta {
     }
 
     @Override
-    public boolean estaDisponivelParaAluguel() {
-        return "disponivel".equals(getEstado());
-    }
-
-    @Override
-    public void validarRetirada() {
-        if (!estaDisponivelParaAluguel()) {
-            throw new BicicletaException("Bicicleta nao esta disponivel.");
-        }
-    }
-
-    @Override
-    public Bicicleta retirarDaEstacao() {
-        return new BicicletaConvencional(getId(), null, "emUso");
-    }
-
-    @Override
     public BigDecimal getAdicionalPorMinuto() {
         return BigDecimal.ZERO;
     }
 
     @Override
-    public Bicicleta devolverNaEstacao(String idEstacao) {
-        return new BicicletaConvencional(getId(), idEstacao);
-    }
-
-    @Override
-    public Bicicleta colocarEmManutencao(String idEstacao) {
-        return new BicicletaConvencional(getId(), idEstacao, "emManutencao");
+    protected Bicicleta copiar(String novaEstacao, String novoEstado) {
+        return new BicicletaConvencional(getId(), novaEstacao, novoEstado);
     }
 
     @Override

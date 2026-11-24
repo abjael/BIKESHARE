@@ -8,12 +8,16 @@ public class BicicletaEletrica extends Bicicleta {
     private final int nivelBateria;
 
     public BicicletaEletrica(String id, String estacao, int nivelBateria) {
-        this(id, estacao, "disponivel", nivelBateria);
+        this(id, estacao, DISPONIVEL, nivelBateria);
     }
 
     public BicicletaEletrica(String id, String estacao, String estado, int nivelBateria) {
         super(id, estacao, estado);
         this.nivelBateria = nivelBateria;
+    }
+
+    public int getNivelBateria() {
+        return nivelBateria;
     }
 
     @Override
@@ -22,38 +26,29 @@ public class BicicletaEletrica extends Bicicleta {
     }
 
     @Override
-    public boolean estaDisponivelParaAluguel() {
-        return "disponivel".equals(getEstado()) && nivelBateria >= ConfiguracaoSistema.NIVEL_MINIMO_BATERIA;
+    public BigDecimal getAdicionalPorMinuto() {
+        return ConfiguracaoSistema.getAdicionalEletricaPorMinuto();
     }
 
     @Override
-    public void validarRetirada() {
-        if (!"disponivel".equals(getEstado())) {
-            throw new BicicletaException("Bicicleta nao esta disponivel.");
-        }
-        if (nivelBateria < ConfiguracaoSistema.NIVEL_MINIMO_BATERIA) {
+    public boolean estaDisponivelParaAluguel() {
+        return super.estaDisponivelParaAluguel() && possuiBateriaSuficiente();
+    }
+
+    @Override
+    protected void validarCondicoesDoTipo() {
+        if (!possuiBateriaSuficiente()) {
             throw new BicicletaException("Nivel de bateria insuficiente.");
         }
     }
 
-    @Override
-    public Bicicleta retirarDaEstacao() {
-        return new BicicletaEletrica(getId(), null, "emUso", nivelBateria);
+    private boolean possuiBateriaSuficiente() {
+        return nivelBateria >= ConfiguracaoSistema.getNivelMinimoBateria();
     }
 
     @Override
-    public BigDecimal getAdicionalPorMinuto() {
-        return ConfiguracaoSistema.ADICIONAL_ELETRICA_POR_MINUTO;
-    }
-
-    @Override
-    public Bicicleta devolverNaEstacao(String idEstacao) {
-        return new BicicletaEletrica(getId(), idEstacao, nivelBateria);
-    }
-
-    @Override
-    public Bicicleta colocarEmManutencao(String idEstacao) {
-        return new BicicletaEletrica(getId(), idEstacao, "emManutencao", nivelBateria);
+    protected Bicicleta copiar(String novaEstacao, String novoEstado) {
+        return new BicicletaEletrica(getId(), novaEstacao, novoEstado, nivelBateria);
     }
 
     @Override
@@ -62,9 +57,5 @@ public class BicicletaEletrica extends Bicicleta {
             return Integer.toString(nivelBateria);
         }
         throw atributoInexistente();
-    }
-
-    public int getNivelBateria() {
-        return nivelBateria;
     }
 }

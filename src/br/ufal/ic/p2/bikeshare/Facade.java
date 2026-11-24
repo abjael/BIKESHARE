@@ -2,32 +2,34 @@ package br.ufal.ic.p2.bikeshare;
 
 import br.ufal.ic.p2.bikeshare.servico.SistemaBikeShare;
 
+
 public class Facade {
 
-    private final SistemaBikeShare sistema;
+    private final SistemaBikeShare sistema = new SistemaBikeShare();
 
-    public Facade() {
-        sistema = new SistemaBikeShare();
-    }
-
+    
     public String criarUsuario(String nome, String email, String senha, String tipo, String cpfOuCnpj) {
         return sistema.criarPessoaFisica(nome, email, senha, tipo, cpfOuCnpj, "avulso", null);
     }
 
+    
     public String criarUsuario(String nome, String email, String senha, String tipo, String cnpj, String razaoSocial) {
         return sistema.criarPessoaJuridica(nome, email, senha, tipo, cnpj, razaoSocial, "avulso", null);
     }
 
+    
     public String criarUsuario(String nome, String email, String senha, String tipo, String cpf,
-                                 String plano, String mensalidade) {
+                               String plano, String mensalidade) {
         return sistema.criarPessoaFisica(nome, email, senha, tipo, cpf, plano, mensalidade);
     }
 
+    
     public String criarUsuario(String nome, String email, String senha, String tipo, String cnpj,
-                                 String razaoSocial, String plano, String mensalidade) {
+                               String razaoSocial, String plano, String mensalidade) {
         return sistema.criarPessoaJuridica(nome, email, senha, tipo, cnpj, razaoSocial, plano, mensalidade);
     }
 
+    
     public String getAtributoUsuario(String usuario, String atributo) {
         return sistema.getAtributoUsuario(usuario, atributo);
     }
@@ -52,14 +54,17 @@ public class Facade {
         sistema.alterarUsuario(usuario, atributo, valor1, numero, validade);
     }
 
+    
     public void zerarSistema() {
         sistema.zerar();
     }
 
+    
     public void encerrarSistema() {
         sistema.salvar();
     }
 
+    
     public String criarEstacao(String nome, String endereco, String capacidade) {
         return sistema.criarEstacao(nome, endereco, capacidade);
     }
@@ -73,7 +78,7 @@ public class Facade {
     }
 
     public void adicionarBicicleta(String estacao, String bicicleta, String tipo) {
-        sistema.adicionarBicicleta(estacao, bicicleta, tipo);
+        sistema.adicionarBicicleta(estacao, bicicleta, tipo, null);
     }
 
     public void adicionarBicicleta(String estacao, String bicicleta, String tipo, String nivelBateria) {
@@ -92,6 +97,7 @@ public class Facade {
         return sistema.getEstadoBicicleta(bicicleta);
     }
 
+    
     public String retirarBicicleta(String usuario, String estacao, String bicicleta, String data) {
         return sistema.retirarBicicleta(usuario, estacao, bicicleta, data);
     }
@@ -100,6 +106,7 @@ public class Facade {
         return sistema.getAtributoAluguel(aluguel, atributo);
     }
 
+    
     public void devolverBicicleta(String aluguel, String estacao, String data) {
         sistema.devolverBicicleta(aluguel, estacao, data);
     }

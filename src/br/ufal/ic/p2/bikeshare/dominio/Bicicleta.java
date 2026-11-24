@@ -4,7 +4,12 @@ import br.ufal.ic.p2.bikeshare.excecao.bicicleta.BicicletaException;
 
 import java.math.BigDecimal;
 
+
 public abstract class Bicicleta {
+    public static final String DISPONIVEL = "disponivel";
+    public static final String EM_USO = "emUso";
+    public static final String EM_MANUTENCAO = "emManutencao";
+
     private final String id;
     private final String estacao;
     private final String estado;
@@ -27,19 +32,42 @@ public abstract class Bicicleta {
         return estado;
     }
 
+    public boolean estaNaEstacao(String idEstacao) {
+        return idEstacao.equals(getEstacao());
+    }
+
     public abstract String getTipo();
-
-    public abstract boolean estaDisponivelParaAluguel();
-
-    public abstract void validarRetirada();
-
-    public abstract Bicicleta retirarDaEstacao();
 
     public abstract BigDecimal getAdicionalPorMinuto();
 
-    public abstract Bicicleta devolverNaEstacao(String idEstacao);
+    
+    public boolean estaDisponivelParaAluguel() {
+        return DISPONIVEL.equals(estado);
+    }
 
-    public abstract Bicicleta colocarEmManutencao(String idEstacao);
+    
+    public void validarRetirada() {
+        if (!DISPONIVEL.equals(estado)) {
+            throw new BicicletaException("Bicicleta nao esta disponivel.");
+        }
+        validarCondicoesDoTipo();
+    }
+
+    
+    protected void validarCondicoesDoTipo() {
+    }
+
+    public Bicicleta retirarDaEstacao() {
+        return copiar(null, EM_USO);
+    }
+
+    public Bicicleta devolverNaEstacao(String idEstacao) {
+        return copiar(idEstacao, DISPONIVEL);
+    }
+
+    public Bicicleta colocarEmManutencao(String idEstacao) {
+        return copiar(idEstacao, EM_MANUTENCAO);
+    }
 
     public String getAtributo(String atributo) {
         if ("tipo".equals(atributo)) {
@@ -52,10 +80,12 @@ public abstract class Bicicleta {
             return getEstacao();
         }
         if (atributo == null || atributo.isEmpty()) {
-            throw new BicicletaException("Atributo nao existe.");
+            throw atributoInexistente();
         }
         return getAtributoEspecifico(atributo);
     }
+
+    protected abstract Bicicleta copiar(String novaEstacao, String novoEstado);
 
     protected abstract String getAtributoEspecifico(String atributo);
 

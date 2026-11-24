@@ -6,8 +6,7 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 
 final class ValidadorUsuario {
-    static final Pattern EMAIL_VALIDO = Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
-    static final Pattern VALOR_NUMERICO = Pattern.compile("^-?\\d+(?:[.,]\\d+)?$");
+    private static final Pattern EMAIL_VALIDO = Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
 
     private ValidadorUsuario() {
     }
@@ -26,12 +25,8 @@ final class ValidadorUsuario {
     }
 
     static void validarPreenchimento(String valor, String mensagem) {
-        if (emBranco(valor)) {
+        if (ValidadorEntrada.emBranco(valor)) {
             throw new UsuarioException(mensagem);
         }
-    }
-
-    static boolean emBranco(String valor) {
-        return valor == null || valor.trim().isEmpty();
     }
 }
