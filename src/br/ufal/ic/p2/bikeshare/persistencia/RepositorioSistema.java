@@ -1,17 +1,21 @@
 package br.ufal.ic.p2.bikeshare.persistencia;
 
+import br.ufal.ic.p2.bikeshare.dominio.plano.PlanoAvulso;
+import br.ufal.ic.p2.bikeshare.dominio.plano.PlanoAssinante;
+import br.ufal.ic.p2.bikeshare.dominio.pagamento.Cartao;
+import br.ufal.ic.p2.bikeshare.dominio.pagamento.Pix;
+import br.ufal.ic.p2.bikeshare.dominio.pagamento.SaldoPreCarregado;
+import br.ufal.ic.p2.bikeshare.dominio.usuario.PessoaFisica;
+import br.ufal.ic.p2.bikeshare.dominio.usuario.PessoaJuridica;
+import br.ufal.ic.p2.bikeshare.dominio.bicicleta.BicicletaConvencional;
+import br.ufal.ic.p2.bikeshare.dominio.bicicleta.BicicletaEletrica;
+import br.ufal.ic.p2.bikeshare.dominio.estacao.Estacao;
+import br.ufal.ic.p2.bikeshare.dominio.aluguel.Aluguel;
 import br.ufal.ic.p2.bikeshare.excecao.BikeShareException;
-import br.ufal.ic.p2.bikeshare.dominio.Cartao;
-import br.ufal.ic.p2.bikeshare.dominio.Aluguel;
-import br.ufal.ic.p2.bikeshare.dominio.BicicletaConvencional;
-import br.ufal.ic.p2.bikeshare.dominio.BicicletaEletrica;
-import br.ufal.ic.p2.bikeshare.dominio.Estacao;
-import br.ufal.ic.p2.bikeshare.dominio.PlanoAssinante;
-import br.ufal.ic.p2.bikeshare.dominio.PlanoAvulso;
-import br.ufal.ic.p2.bikeshare.dominio.PessoaFisica;
-import br.ufal.ic.p2.bikeshare.dominio.PessoaJuridica;
-import br.ufal.ic.p2.bikeshare.dominio.Pix;
-import br.ufal.ic.p2.bikeshare.dominio.SaldoPreCarregado;
+import br.ufal.ic.p2.bikeshare.excecao.persistencia.PersistenciaException;
+import br.ufal.ic.p2.bikeshare.excecao.persistencia.CargaPersistenciaException;
+import br.ufal.ic.p2.bikeshare.excecao.persistencia.DadosPersistidosInvalidosException;
+import br.ufal.ic.p2.bikeshare.excecao.persistencia.GravacaoPersistenciaException;
 
 import java.beans.Expression;
 import java.beans.PersistenceDelegate;
@@ -40,14 +44,14 @@ public class RepositorioSistema {
         try (XMLDecoder entrada = new XMLDecoder(new FileInputStream(ARQUIVO), null, erroLeitura::set)) {
             EstadoPersistido estado = EstadoPersistido.class.cast(entrada.readObject());
             if (erroLeitura.get() != null) {
-                throw new BikeShareException("Nao foi possivel carregar os dados do sistema.", erroLeitura.get());
+                throw new CargaPersistenciaException(erroLeitura.get());
             }
             if (estado == null) {
-                throw new BikeShareException("Formato de dados persistidos invalido.");
+                throw new DadosPersistidosInvalidosException();
             }
             return estado;
-        } catch (IOException | ClassCastException excecao) {
-            throw new BikeShareException("Nao foi possivel carregar os dados do sistema.", excecao);
+        } catch (IOException | RuntimeException excecao) {
+            throw new CargaPersistenciaException(excecao);
         }
     }
 
@@ -58,15 +62,25 @@ public class RepositorioSistema {
             configurarPersistenciaXml(saida);
             saida.writeObject(estado);
         } catch (IOException excecao) {
-            throw new BikeShareException("Nao foi possivel salvar os dados do sistema.", excecao);
+            limparArquivoTemporario();
+            throw new GravacaoPersistenciaException(excecao);
         }
         if (erroEscrita.get() != null) {
-            throw new BikeShareException("Nao foi possivel salvar os dados do sistema.", erroEscrita.get());
+            limparArquivoTemporario();
+            throw new GravacaoPersistenciaException(erroEscrita.get());
         }
         try {
             Files.move(ARQUIVO_TEMPORARIO.toPath(), ARQUIVO.toPath(), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException excecao) {
-            throw new BikeShareException("Nao foi possivel salvar os dados do sistema.", excecao);
+            limparArquivoTemporario();
+            throw new GravacaoPersistenciaException(excecao);
+        }
+    }
+
+    private void limparArquivoTemporario() {
+        try {
+            Files.deleteIfExists(ARQUIVO_TEMPORARIO.toPath());
+        } catch (IOException ignorado) {
         }
     }
 
@@ -97,7 +111,7 @@ public class RepositorioSistema {
                 delegate(Estacao.class, objeto -> {
                     Estacao estacao = (Estacao) objeto;
                     return new Object[]{estacao.getId(), estacao.getNome(), estacao.getEndereco(),
-                            estacao.getCapacidade(), estacao.getQuantidadeBicicletas()};
+                            estacao.getCapacidade()};
                 }));
     }
 
@@ -105,12 +119,12 @@ public class RepositorioSistema {
         encoder.setPersistenceDelegate(BicicletaConvencional.class,
                 delegate(BicicletaConvencional.class, objeto -> {
                     BicicletaConvencional bicicleta = (BicicletaConvencional) objeto;
-                    return new Object[]{bicicleta.getId(), bicicleta.getEstacao(), bicicleta.getEstado()};
+                    return new Object[]{bicicleta.getId(), bicicleta.getEstacaoPersistida(), bicicleta.getEstado()};
                 }));
         encoder.setPersistenceDelegate(BicicletaEletrica.class,
                 delegate(BicicletaEletrica.class, objeto -> {
                     BicicletaEletrica bicicleta = (BicicletaEletrica) objeto;
-                    return new Object[]{bicicleta.getId(), bicicleta.getEstacao(), bicicleta.getEstado(),
+                    return new Object[]{bicicleta.getId(), bicicleta.getEstacaoPersistida(), bicicleta.getEstado(),
                             bicicleta.getNivelBateria()};
                 }));
     }

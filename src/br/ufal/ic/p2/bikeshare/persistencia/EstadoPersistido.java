@@ -1,9 +1,9 @@
 package br.ufal.ic.p2.bikeshare.persistencia;
 
-import br.ufal.ic.p2.bikeshare.dominio.Estacao;
-import br.ufal.ic.p2.bikeshare.dominio.Bicicleta;
-import br.ufal.ic.p2.bikeshare.dominio.Aluguel;
-import br.ufal.ic.p2.bikeshare.dominio.Usuario;
+import br.ufal.ic.p2.bikeshare.dominio.usuario.Usuario;
+import br.ufal.ic.p2.bikeshare.dominio.bicicleta.Bicicleta;
+import br.ufal.ic.p2.bikeshare.dominio.estacao.Estacao;
+import br.ufal.ic.p2.bikeshare.dominio.aluguel.Aluguel;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
