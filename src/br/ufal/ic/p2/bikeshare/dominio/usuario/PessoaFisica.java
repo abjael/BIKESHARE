@@ -1,8 +1,8 @@
 package br.ufal.ic.p2.bikeshare.dominio.usuario;
 
-import br.ufal.ic.p2.bikeshare.dominio.plano.Plano;
 import br.ufal.ic.p2.bikeshare.dominio.pagamento.MetodoPagamento;
-import br.ufal.ic.p2.bikeshare.dominio.usuario.Usuario;
+import br.ufal.ic.p2.bikeshare.dominio.plano.Plano;
+import br.ufal.ic.p2.bikeshare.excecao.campo.CpfNuloException;
 import br.ufal.ic.p2.bikeshare.excecao.usuario.UsuarioNaoEhPessoaJuridicaException;
 
 import java.math.BigDecimal;
@@ -28,7 +28,7 @@ public class PessoaFisica extends Usuario {
 
     private String validarCpf(String valor) {
         if (valor == null || valor.trim().isEmpty()) {
-            throw new br.ufal.ic.p2.bikeshare.excecao.usuario.CampoObrigatorioException("CPF nao pode ser nulo.");
+            throw new CpfNuloException();
         }
         return valor.trim();
     }

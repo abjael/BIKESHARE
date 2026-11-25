@@ -1,13 +1,10 @@
 package br.ufal.ic.p2.bikeshare.dominio.pagamento;
 
-import br.ufal.ic.p2.bikeshare.dominio.pagamento.MetodoPagamento;
 import br.ufal.ic.p2.bikeshare.excecao.pagamento.MetodoPagamentoNaoCadastradoException;
-import br.ufal.ic.p2.bikeshare.excecao.pagamento.UsuarioNaoUsaCartaoException;
-import br.ufal.ic.p2.bikeshare.excecao.pagamento.UsuarioNaoUsaPixException;
 import br.ufal.ic.p2.bikeshare.excecao.pagamento.UsuarioNaoUsaSaldoException;
-import br.ufal.ic.p2.bikeshare.excecao.pagamento.AtributoPagamentoNaoExisteException;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 public class SemMetodoPagamento extends MetodoPagamento {
     @Override
@@ -17,20 +14,11 @@ public class SemMetodoPagamento extends MetodoPagamento {
 
     @Override
     public String getAtributo(String atributo) {
-        if ("numeroCartao".equals(atributo) || "validadeCartao".equals(atributo)) {
-            throw new UsuarioNaoUsaCartaoException();
-        }
-        if ("chavePix".equals(atributo)) {
-            throw new UsuarioNaoUsaPixException();
-        }
-        if ("saldo".equals(atributo)) {
-            throw new UsuarioNaoUsaSaldoException();
-        }
-        throw new AtributoPagamentoNaoExisteException();
+        throw atributoNaoSuportado(atributo);
     }
 
     @Override
-    public void validarPagamentoPendente() {
+    public void validarPagamentoPendente(LocalDateTime data) {
         throw new MetodoPagamentoNaoCadastradoException();
     }
 

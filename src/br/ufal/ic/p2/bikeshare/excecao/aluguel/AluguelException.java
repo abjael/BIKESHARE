@@ -5,7 +5,7 @@ import br.ufal.ic.p2.bikeshare.excecao.BikeShareException;
 public abstract class AluguelException extends BikeShareException {
     private static final long serialVersionUID = 1L;
 
-    public AluguelException(String mensagem) {
+    protected AluguelException(String mensagem) {
         super(mensagem);
     }
 }

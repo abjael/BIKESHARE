@@ -1,35 +1,25 @@
 package br.ufal.ic.p2.bikeshare.servico.usuario;
 
+import br.ufal.ic.p2.bikeshare.dominio.usuario.Usuario;
+import br.ufal.ic.p2.bikeshare.excecao.BikeShareException;
 import br.ufal.ic.p2.bikeshare.servico.validacao.ValidadorEntrada;
-import br.ufal.ic.p2.bikeshare.excecao.usuario.CampoObrigatorioException;
-import br.ufal.ic.p2.bikeshare.excecao.usuario.EmailNaoPodeSerNuloException;
-import br.ufal.ic.p2.bikeshare.excecao.usuario.EmailInvalidoException;
 
 import java.util.Locale;
-import java.util.regex.Pattern;
+import java.util.function.Supplier;
 
 public final class ValidadorUsuario {
-    private static final Pattern EMAIL_VALIDO = Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
-
     private ValidadorUsuario() {
     }
 
     public static String validarEmail(String email) {
-        if (ValidadorEntrada.emBranco(email)) {
-            throw new EmailNaoPodeSerNuloException();
-        }
-        String emailNormalizado = email.trim();
-        if (!EMAIL_VALIDO.matcher(emailNormalizado).matches()) {
-            throw new EmailInvalidoException();
-        }
-        return emailNormalizado;
+        return Usuario.validarEmail(email);
     }
 
     public static String normalizarEmail(String email) {
         return email.trim().toLowerCase(Locale.ROOT);
     }
 
-    public static void validarPreenchimento(String valor, String mensagem) {
-        ValidadorEntrada.exigirPreenchido(valor, () -> new CampoObrigatorioException(mensagem));
+    public static void validarPreenchimento(String valor, Supplier<? extends BikeShareException> erro) {
+        ValidadorEntrada.exigirPreenchido(valor, erro);
     }
 }

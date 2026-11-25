@@ -1,6 +1,5 @@
 package br.ufal.ic.p2.bikeshare.dominio.bicicleta;
 
-import br.ufal.ic.p2.bikeshare.dominio.bicicleta.Bicicleta;
 import br.ufal.ic.p2.bikeshare.excecao.bicicleta.BicicletaSemBateriaException;
 
 import java.math.BigDecimal;

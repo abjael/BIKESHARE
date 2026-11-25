@@ -1,21 +1,31 @@
 package br.ufal.ic.p2.bikeshare.dominio.usuario;
 
-import br.ufal.ic.p2.bikeshare.dominio.plano.Plano;
 import br.ufal.ic.p2.bikeshare.dominio.pagamento.MetodoPagamento;
 import br.ufal.ic.p2.bikeshare.dominio.pagamento.SaldoPreCarregado;
 import br.ufal.ic.p2.bikeshare.dominio.pagamento.SemMetodoPagamento;
+import br.ufal.ic.p2.bikeshare.dominio.plano.Plano;
 import br.ufal.ic.p2.bikeshare.dominio.util.FormatoMoeda;
-import br.ufal.ic.p2.bikeshare.excecao.usuario.UsuarioException;
-import br.ufal.ic.p2.bikeshare.excecao.usuario.AtributoUsuarioNaoExisteException;
-import br.ufal.ic.p2.bikeshare.excecao.pagamento.MetodoPagamentoNaoCadastradoException;
-import br.ufal.ic.p2.bikeshare.excecao.pagamento.UsuarioNaoUsaSaldoException;
-import java.time.LocalDateTime;
+import br.ufal.ic.p2.bikeshare.excecao.AtributoInexistenteException;
+import br.ufal.ic.p2.bikeshare.excecao.BikeShareException;
+import br.ufal.ic.p2.bikeshare.excecao.campo.NomeNuloException;
+import br.ufal.ic.p2.bikeshare.excecao.campo.SenhaNulaException;
+import br.ufal.ic.p2.bikeshare.excecao.pagamento.SaldoNegativoException;
+import br.ufal.ic.p2.bikeshare.excecao.plano.PlanoInvalidoException;
+import br.ufal.ic.p2.bikeshare.excecao.usuario.EmailInvalidoException;
+import br.ufal.ic.p2.bikeshare.excecao.usuario.EmailNaoPodeSerNuloException;
+import br.ufal.ic.p2.bikeshare.excecao.usuario.IdentificacaoUsuarioNulaException;
+import br.ufal.ic.p2.bikeshare.excecao.usuario.PendenciaInvalidaException;
+import br.ufal.ic.p2.bikeshare.excecao.usuario.UsuarioJaPossuiAluguelException;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.Optional;
-
+import java.util.regex.Pattern;
 
 public abstract class Usuario {
+    private static final Pattern EMAIL_VALIDO = Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
+
     private final String id;
     private final String nome;
     private final String email;
@@ -34,34 +44,34 @@ public abstract class Usuario {
                       MetodoPagamento metodoPagamento, BigDecimal saldoPreCarregado, String aluguelAtivo,
                       BigDecimal totalPendencias) {
         if (id == null || id.trim().isEmpty()) {
-            throw new br.ufal.ic.p2.bikeshare.excecao.usuario.IdentificacaoUsuarioNulaException();
+            throw new IdentificacaoUsuarioNulaException();
         }
-        if (nome == null || nome.trim().isEmpty()) {
-            throw new br.ufal.ic.p2.bikeshare.excecao.usuario.CampoObrigatorioException("Nome nao pode ser nulo.");
+        if (emBranco(nome)) {
+            throw new NomeNuloException();
         }
-        if (email == null || email.trim().isEmpty()) {
-            throw new br.ufal.ic.p2.bikeshare.excecao.usuario.EmailNaoPodeSerNuloException();
-        }
-        if (senha == null || senha.trim().isEmpty()) {
-            throw new br.ufal.ic.p2.bikeshare.excecao.usuario.CampoObrigatorioException("Senha nao pode ser nula.");
+        String emailValidado = validarEmail(email);
+        if (emBranco(senha)) {
+            throw new SenhaNulaException();
         }
         if (plano == null) {
-            throw new br.ufal.ic.p2.bikeshare.excecao.plano.PlanoInvalidoException();
+            throw new PlanoInvalidoException();
         }
-        if (saldoPreCarregado == null || saldoPreCarregado.signum() < 0
-                || totalPendencias == null || totalPendencias.signum() < 0) {
-            throw new br.ufal.ic.p2.bikeshare.excecao.usuario.ValorSaldoNaoPositivoException();
+        if (saldoPreCarregado == null || saldoPreCarregado.signum() < 0) {
+            throw new SaldoNegativoException();
+        }
+        if (totalPendencias == null || totalPendencias.signum() < 0) {
+            throw new PendenciaInvalidaException();
         }
         this.id = id;
         this.nome = nome.trim();
-        this.email = email.trim();
+        this.email = emailValidado;
         this.senha = senha;
         this.plano = plano;
         this.metodoPagamento = metodoPagamento == null ? new SemMetodoPagamento() : metodoPagamento;
         this.carteira = this.metodoPagamento.getCarteira()
                 .orElseGet(() -> new SaldoPreCarregado(saldoPreCarregado));
         this.aluguelAtivo = aluguelAtivo;
-        this.totalPendencias = totalPendencias.setScale(2, java.math.RoundingMode.HALF_UP);
+        this.totalPendencias = totalPendencias.setScale(2, RoundingMode.HALF_UP);
     }
 
     public String getId() {
@@ -129,16 +139,13 @@ public abstract class Usuario {
     }
 
     public Usuario comSaldo(BigDecimal novoSaldo) {
-        if (metodoPagamento == null) {
-            throw new UsuarioNaoUsaSaldoException();
-        }
         MetodoPagamento pagamentoAtualizado = metodoPagamento.comSaldo(novoSaldo);
         return criarCopia(dadosAtuais().comCarteira(pagamentoAtualizado));
     }
 
     public Usuario comAluguelAtivo(String novoAluguelAtivo) {
         if (novoAluguelAtivo != null && aluguelAtivo != null) {
-            throw new br.ufal.ic.p2.bikeshare.excecao.usuario.UsuarioJaPossuiAluguelException();
+            throw new UsuarioJaPossuiAluguelException();
         }
         return criarCopia(dadosAtuais().comAluguelAtivo(novoAluguelAtivo));
     }
@@ -150,25 +157,32 @@ public abstract class Usuario {
 
     public Usuario adicionarPendencia(BigDecimal valor) {
         if (valor == null || valor.signum() <= 0) {
-            throw new br.ufal.ic.p2.bikeshare.excecao.pagamento.ValorMetodoPagamentoInvalidoException();
+            throw new PendenciaInvalidaException();
         }
         return criarCopia(dadosAtuais().comPendencias(totalPendencias.add(valor)
-                .setScale(2, java.math.RoundingMode.HALF_UP)));
+                .setScale(2, RoundingMode.HALF_UP)));
     }
 
-    
-    public void validarPagamentoPendente() {
-        validarPagamentoPendente(LocalDateTime.now());
-    }
-
-    public void validarPagamentoPendente(LocalDateTime data) {
-        if (metodoPagamento == null) {
-            throw new MetodoPagamentoNaoCadastradoException();
-        }
+        public void validarPagamentoPendente(LocalDateTime data) {
         metodoPagamento.validarPagamentoPendente(data);
     }
 
-    
+    /** Confere preenchimento e formato do email; devolve o email sem espacos nas pontas. */
+    public static String validarEmail(String email) {
+        if (emBranco(email)) {
+            throw new EmailNaoPodeSerNuloException();
+        }
+        String emailNormalizado = email.trim();
+        if (!EMAIL_VALIDO.matcher(emailNormalizado).matches()) {
+            throw new EmailInvalidoException();
+        }
+        return emailNormalizado;
+    }
+
+    private static boolean emBranco(String valor) {
+        return valor == null || valor.trim().isEmpty();
+    }
+
     public String getAtributo(String atributo) {
         return getAtributoComum(atributo).or(() -> getAtributoPagamento(atributo))
                 .orElseGet(() -> getAtributoEspecifico(atributo));
@@ -242,15 +256,16 @@ public abstract class Usuario {
                 totalPendencias);
     }
 
+    /** Copia dos dados mutaveis do usuario; cada comX altera um campo de uma copia nova. */
     protected static final class DadosUsuario {
-        final String nome;
-        final String email;
-        final String senha;
-        final Plano plano;
-        final MetodoPagamento metodoPagamento;
-        final BigDecimal saldo;
-        final String aluguelAtivo;
-        final BigDecimal totalPendencias;
+        String nome;
+        String email;
+        String senha;
+        Plano plano;
+        MetodoPagamento metodoPagamento;
+        BigDecimal saldo;
+        String aluguelAtivo;
+        BigDecimal totalPendencias;
 
         DadosUsuario(String nome, String email, String senha, Plano plano, MetodoPagamento metodoPagamento,
                      BigDecimal saldo, String aluguelAtivo, BigDecimal totalPendencias) {
@@ -264,45 +279,61 @@ public abstract class Usuario {
             this.totalPendencias = totalPendencias;
         }
 
-        DadosUsuario comNome(String valor) {
-            return new DadosUsuario(valor, email, senha, plano, metodoPagamento, saldo, aluguelAtivo,
+        private DadosUsuario copia() {
+            return new DadosUsuario(nome, email, senha, plano, metodoPagamento, saldo, aluguelAtivo,
                     totalPendencias);
+        }
+
+        DadosUsuario comNome(String valor) {
+            DadosUsuario copia = copia();
+            copia.nome = valor;
+            return copia;
         }
 
         DadosUsuario comEmail(String valor) {
-            return new DadosUsuario(nome, valor, senha, plano, metodoPagamento, saldo, aluguelAtivo,
-                    totalPendencias);
+            DadosUsuario copia = copia();
+            copia.email = valor;
+            return copia;
         }
 
         DadosUsuario comSenha(String valor) {
-            return new DadosUsuario(nome, email, valor, plano, metodoPagamento, saldo, aluguelAtivo,
-                    totalPendencias);
+            DadosUsuario copia = copia();
+            copia.senha = valor;
+            return copia;
         }
 
         DadosUsuario comPlano(Plano valor) {
-            return new DadosUsuario(nome, email, senha, valor, metodoPagamento, saldo, aluguelAtivo,
-                    totalPendencias);
+            DadosUsuario copia = copia();
+            copia.plano = valor;
+            return copia;
         }
 
         DadosUsuario comMetodoPagamento(MetodoPagamento valor) {
-            return new DadosUsuario(nome, email, senha, plano, valor, saldo, aluguelAtivo, totalPendencias);
+            DadosUsuario copia = copia();
+            copia.metodoPagamento = valor;
+            return copia;
         }
 
         DadosUsuario comCarteira(MetodoPagamento pagamentoAtualizado) {
-            return new DadosUsuario(nome, email, senha, plano, pagamentoAtualizado,
-                    pagamentoAtualizado.getSaldoOu(saldo), aluguelAtivo, totalPendencias);
+            DadosUsuario copia = comMetodoPagamento(pagamentoAtualizado);
+            copia.saldo = pagamentoAtualizado.getSaldoOu(saldo);
+            return copia;
         }
 
         DadosUsuario comAluguelAtivo(String valor) {
-            return new DadosUsuario(nome, email, senha, plano, metodoPagamento, saldo, valor, totalPendencias);
+            DadosUsuario copia = copia();
+            copia.aluguelAtivo = valor;
+            return copia;
         }
 
         DadosUsuario comPendencias(BigDecimal valor) {
-            return new DadosUsuario(nome, email, senha, plano, metodoPagamento, saldo, aluguelAtivo, valor);
+            DadosUsuario copia = copia();
+            copia.totalPendencias = valor;
+            return copia;
         }
     }
 
-    protected UsuarioException atributoInexistente() {
-        return new AtributoUsuarioNaoExisteException();
+    protected BikeShareException atributoInexistente() {
+        return new AtributoInexistenteException();
     }
 }

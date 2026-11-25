@@ -1,25 +1,20 @@
 package br.ufal.ic.p2.bikeshare.servico.aluguel;
 
-import br.ufal.ic.p2.bikeshare.servico.estado.EstadoSistema;
-import br.ufal.ic.p2.bikeshare.servico.validacao.ValidadorEntrada;
-import br.ufal.ic.p2.bikeshare.dominio.usuario.Usuario;
+import br.ufal.ic.p2.bikeshare.dominio.aluguel.Aluguel;
 import br.ufal.ic.p2.bikeshare.dominio.bicicleta.Bicicleta;
 import br.ufal.ic.p2.bikeshare.dominio.estacao.Estacao;
-import br.ufal.ic.p2.bikeshare.dominio.aluguel.Aluguel;
+import br.ufal.ic.p2.bikeshare.dominio.usuario.Usuario;
 import br.ufal.ic.p2.bikeshare.dominio.util.ConfiguracaoSistema;
 import br.ufal.ic.p2.bikeshare.dominio.util.FormatoDataHora;
-import br.ufal.ic.p2.bikeshare.excecao.aluguel.AluguelException;
-import br.ufal.ic.p2.bikeshare.excecao.bicicleta.BicicletaException;
-import br.ufal.ic.p2.bikeshare.excecao.estacao.EstacaoException;
-import br.ufal.ic.p2.bikeshare.excecao.usuario.UsuarioException;
-import br.ufal.ic.p2.bikeshare.excecao.usuario.UsuarioInadimplenteException;
-import br.ufal.ic.p2.bikeshare.excecao.usuario.UsuarioJaPossuiAluguelException;
-import br.ufal.ic.p2.bikeshare.excecao.bicicleta.BicicletaNaoEstaNaEstacaoException;
 import br.ufal.ic.p2.bikeshare.excecao.aluguel.AluguelNaoEstaEmAndamentoException;
 import br.ufal.ic.p2.bikeshare.excecao.aluguel.DataDevolucaoAnteriorException;
-import br.ufal.ic.p2.bikeshare.excecao.aluguel.DataNaoPodeSerNulaException;
 import br.ufal.ic.p2.bikeshare.excecao.aluguel.DataInvalidaException;
+import br.ufal.ic.p2.bikeshare.excecao.aluguel.DataNaoPodeSerNulaException;
+import br.ufal.ic.p2.bikeshare.excecao.bicicleta.BicicletaNaoEstaNaEstacaoException;
 import br.ufal.ic.p2.bikeshare.excecao.estacao.EstacaoCheiaException;
+import br.ufal.ic.p2.bikeshare.excecao.usuario.UsuarioInadimplenteException;
+import br.ufal.ic.p2.bikeshare.excecao.usuario.UsuarioJaPossuiAluguelException;
+import br.ufal.ic.p2.bikeshare.servico.estado.EstadoSistema;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -27,7 +22,6 @@ import java.time.DateTimeException;
 import java.time.LocalDateTime;
 
 import static br.ufal.ic.p2.bikeshare.servico.validacao.ValidadorEntrada.emBranco;
-
 
 public final class ServicoAluguel {
     private final EstadoSistema estado;
@@ -94,7 +88,6 @@ public final class ServicoAluguel {
         }
     }
 
-    
     private void registrarExpiracao(Aluguel aluguel, String idEstacao, LocalDateTime fim) {
         Usuario usuario = estado.buscarUsuario(aluguel.getUsuario());
         Bicicleta bicicleta = estado.buscarBicicleta(aluguel.getBicicleta());
@@ -104,7 +97,6 @@ public final class ServicoAluguel {
         estado.atualizar(aluguel.expirar(idEstacao, fim));
     }
 
-    
     private void registrarDevolucao(Aluguel aluguel, String idEstacao, LocalDateTime fim, long minutos) {
         Usuario usuario = estado.buscarUsuario(aluguel.getUsuario());
         Bicicleta bicicleta = estado.buscarBicicleta(aluguel.getBicicleta());

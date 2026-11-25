@@ -1,31 +1,26 @@
 package br.ufal.ic.p2.bikeshare.servico.estado;
 
-import br.ufal.ic.p2.bikeshare.servico.usuario.ValidadorUsuario;
-import br.ufal.ic.p2.bikeshare.servico.validacao.ValidadorEntrada;
-import br.ufal.ic.p2.bikeshare.dominio.usuario.Usuario;
+import br.ufal.ic.p2.bikeshare.dominio.aluguel.Aluguel;
 import br.ufal.ic.p2.bikeshare.dominio.bicicleta.Bicicleta;
 import br.ufal.ic.p2.bikeshare.dominio.estacao.Estacao;
-import br.ufal.ic.p2.bikeshare.dominio.aluguel.Aluguel;
-import br.ufal.ic.p2.bikeshare.excecao.aluguel.AluguelException;
-import br.ufal.ic.p2.bikeshare.excecao.aluguel.IdentificacaoAluguelNulaException;
+import br.ufal.ic.p2.bikeshare.dominio.usuario.Usuario;
 import br.ufal.ic.p2.bikeshare.excecao.aluguel.AluguelNaoExisteException;
-import br.ufal.ic.p2.bikeshare.excecao.bicicleta.BicicletaException;
-import br.ufal.ic.p2.bikeshare.excecao.bicicleta.IdentificacaoBicicletaNulaException;
+import br.ufal.ic.p2.bikeshare.excecao.aluguel.IdentificacaoAluguelNulaException;
 import br.ufal.ic.p2.bikeshare.excecao.bicicleta.BicicletaNaoExisteException;
-import br.ufal.ic.p2.bikeshare.excecao.estacao.EstacaoException;
-import br.ufal.ic.p2.bikeshare.excecao.estacao.IdentificacaoEstacaoNulaException;
+import br.ufal.ic.p2.bikeshare.excecao.bicicleta.IdentificacaoBicicletaNulaException;
 import br.ufal.ic.p2.bikeshare.excecao.estacao.EstacaoNaoExisteException;
-import br.ufal.ic.p2.bikeshare.excecao.usuario.UsuarioException;
+import br.ufal.ic.p2.bikeshare.excecao.estacao.IdentificacaoEstacaoNulaException;
 import br.ufal.ic.p2.bikeshare.excecao.usuario.IdentificacaoUsuarioNulaException;
 import br.ufal.ic.p2.bikeshare.excecao.usuario.UsuarioNaoExisteException;
 import br.ufal.ic.p2.bikeshare.persistencia.EstadoPersistido;
+import br.ufal.ic.p2.bikeshare.servico.usuario.ValidadorUsuario;
+import br.ufal.ic.p2.bikeshare.servico.validacao.ValidadorEntrada;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
-
 
 public final class EstadoSistema {
     private final Map<String, Usuario> usuarios = new LinkedHashMap<>();
@@ -115,7 +110,6 @@ public final class EstadoSistema {
         return entidade;
     }
 
-    
     public Optional<Usuario> buscarUsuarioPorEmail(String email) {
         String chave = ValidadorUsuario.normalizarEmail(email);
         for (Usuario usuario : usuarios.values()) {

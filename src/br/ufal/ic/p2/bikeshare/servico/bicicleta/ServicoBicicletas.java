@@ -1,26 +1,23 @@
 package br.ufal.ic.p2.bikeshare.servico.bicicleta;
 
-import br.ufal.ic.p2.bikeshare.servico.estado.EstadoSistema;
-import br.ufal.ic.p2.bikeshare.servico.validacao.ValidadorEntrada;
 import br.ufal.ic.p2.bikeshare.dominio.bicicleta.Bicicleta;
 import br.ufal.ic.p2.bikeshare.dominio.bicicleta.BicicletaConvencional;
 import br.ufal.ic.p2.bikeshare.dominio.bicicleta.BicicletaEletrica;
 import br.ufal.ic.p2.bikeshare.dominio.bicicleta.EstadoBicicleta;
 import br.ufal.ic.p2.bikeshare.dominio.estacao.Estacao;
-import br.ufal.ic.p2.bikeshare.excecao.bicicleta.BicicletaException;
-import br.ufal.ic.p2.bikeshare.excecao.bicicleta.IdentificacaoBicicletaNulaException;
+import br.ufal.ic.p2.bikeshare.excecao.TipoInvalidoException;
 import br.ufal.ic.p2.bikeshare.excecao.bicicleta.BicicletaJaExisteException;
 import br.ufal.ic.p2.bikeshare.excecao.bicicleta.BicicletaNaoEstaNaEstacaoException;
 import br.ufal.ic.p2.bikeshare.excecao.bicicleta.BicicletaSemBateriaException;
-import br.ufal.ic.p2.bikeshare.excecao.bicicleta.TipoBicicletaInvalidoException;
-import br.ufal.ic.p2.bikeshare.excecao.bicicleta.NivelBateriaNuloException;
-import br.ufal.ic.p2.bikeshare.excecao.bicicleta.NivelBateriaNaoNumericoException;
+import br.ufal.ic.p2.bikeshare.excecao.bicicleta.IdentificacaoBicicletaNulaException;
 import br.ufal.ic.p2.bikeshare.excecao.bicicleta.NivelBateriaForaDaFaixaException;
-import br.ufal.ic.p2.bikeshare.excecao.bicicleta.BicicletaNaoDisponivelException;
+import br.ufal.ic.p2.bikeshare.excecao.bicicleta.NivelBateriaNaoNumericoException;
+import br.ufal.ic.p2.bikeshare.excecao.bicicleta.NivelBateriaNuloException;
 import br.ufal.ic.p2.bikeshare.excecao.estacao.EstacaoSemVagaException;
+import br.ufal.ic.p2.bikeshare.servico.estado.EstadoSistema;
+import br.ufal.ic.p2.bikeshare.servico.validacao.ValidadorEntrada;
 
 import static br.ufal.ic.p2.bikeshare.servico.validacao.ValidadorEntrada.emBranco;
-
 
 public final class ServicoBicicletas {
     private static final int BATERIA_MINIMA = 0;
@@ -89,7 +86,7 @@ public final class ServicoBicicletas {
             return new BicicletaConvencional(id, idEstacao);
         }
         if (!"eletrica".equals(tipo)) {
-            throw new TipoBicicletaInvalidoException();
+            throw new TipoInvalidoException();
         }
         return new BicicletaEletrica(id, idEstacao, validarNivelBateria(nivelBateria));
     }

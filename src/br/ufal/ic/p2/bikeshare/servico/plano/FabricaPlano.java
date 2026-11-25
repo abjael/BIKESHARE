@@ -1,22 +1,21 @@
 package br.ufal.ic.p2.bikeshare.servico.plano;
 
-import br.ufal.ic.p2.bikeshare.servico.validacao.ValidadorEntrada;
 import br.ufal.ic.p2.bikeshare.dominio.plano.Plano;
-import br.ufal.ic.p2.bikeshare.dominio.plano.PlanoAvulso;
 import br.ufal.ic.p2.bikeshare.dominio.plano.PlanoAssinante;
+import br.ufal.ic.p2.bikeshare.dominio.plano.PlanoAvulso;
 import br.ufal.ic.p2.bikeshare.dominio.util.ConfiguracaoSistema;
-import br.ufal.ic.p2.bikeshare.excecao.plano.PlanoSemMensalidadeException;
-import br.ufal.ic.p2.bikeshare.excecao.plano.MensalidadeNulaException;
 import br.ufal.ic.p2.bikeshare.excecao.plano.MensalidadeNaoNumericaException;
 import br.ufal.ic.p2.bikeshare.excecao.plano.MensalidadeNegativaException;
-import br.ufal.ic.p2.bikeshare.excecao.plano.PlanoInvalidoException;
+import br.ufal.ic.p2.bikeshare.excecao.plano.MensalidadeNulaException;
 import br.ufal.ic.p2.bikeshare.excecao.plano.PlanoException;
+import br.ufal.ic.p2.bikeshare.excecao.plano.PlanoInvalidoException;
+import br.ufal.ic.p2.bikeshare.excecao.plano.PlanoSemMensalidadeException;
+import br.ufal.ic.p2.bikeshare.servico.validacao.ValidadorEntrada;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 import static br.ufal.ic.p2.bikeshare.servico.validacao.ValidadorEntrada.emBranco;
-
 
 public final class FabricaPlano {
     private static final String AVULSO = "avulso";
@@ -25,7 +24,6 @@ public final class FabricaPlano {
     private FabricaPlano() {
     }
 
-    
     public static Plano criar(String nome, String mensalidade) {
         if (nome == null) {
             nome = AVULSO;
@@ -42,7 +40,6 @@ public final class FabricaPlano {
         return new PlanoAssinante(validarMensalidade(mensalidade));
     }
 
-    
     public static Plano criarComMensalidadePadrao(String nome) {
         if (nome == null) {
             nome = AVULSO;

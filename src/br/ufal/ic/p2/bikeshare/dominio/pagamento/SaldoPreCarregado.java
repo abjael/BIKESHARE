@@ -1,10 +1,12 @@
 package br.ufal.ic.p2.bikeshare.dominio.pagamento;
 
-import br.ufal.ic.p2.bikeshare.dominio.pagamento.MetodoPagamento;
 import br.ufal.ic.p2.bikeshare.dominio.util.FormatoMoeda;
 import br.ufal.ic.p2.bikeshare.excecao.pagamento.SaldoInsuficienteException;
+import br.ufal.ic.p2.bikeshare.excecao.pagamento.SaldoNegativoException;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 public class SaldoPreCarregado extends MetodoPagamento {
@@ -12,9 +14,9 @@ public class SaldoPreCarregado extends MetodoPagamento {
 
     public SaldoPreCarregado(BigDecimal saldo) {
         if (saldo == null || saldo.signum() < 0) {
-            throw new br.ufal.ic.p2.bikeshare.excecao.usuario.ValorSaldoNaoPositivoException();
+            throw new SaldoNegativoException();
         }
-        this.saldo = saldo.setScale(2, java.math.RoundingMode.HALF_UP);
+        this.saldo = saldo.setScale(2, RoundingMode.HALF_UP);
     }
 
     public BigDecimal getSaldo() {
@@ -27,7 +29,7 @@ public class SaldoPreCarregado extends MetodoPagamento {
     }
 
     @Override
-    public void validarPagamentoPendente() {
+    public void validarPagamentoPendente(LocalDateTime data) {
         if (saldo.signum() <= 0) {
             throw new SaldoInsuficienteException();
         }

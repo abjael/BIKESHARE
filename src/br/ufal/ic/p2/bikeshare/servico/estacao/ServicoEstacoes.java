@@ -1,13 +1,16 @@
 package br.ufal.ic.p2.bikeshare.servico.estacao;
 
-import br.ufal.ic.p2.bikeshare.servico.estado.EstadoSistema;
-import br.ufal.ic.p2.bikeshare.servico.validacao.ValidadorEntrada;
 import br.ufal.ic.p2.bikeshare.dominio.estacao.Estacao;
-import br.ufal.ic.p2.bikeshare.excecao.estacao.EstacaoException;
+import br.ufal.ic.p2.bikeshare.excecao.BikeShareException;
+import br.ufal.ic.p2.bikeshare.excecao.campo.CapacidadeNulaException;
+import br.ufal.ic.p2.bikeshare.excecao.campo.EnderecoNuloException;
+import br.ufal.ic.p2.bikeshare.excecao.campo.NomeNuloException;
 import br.ufal.ic.p2.bikeshare.excecao.estacao.CapacidadeNaoNumericaException;
 import br.ufal.ic.p2.bikeshare.excecao.estacao.CapacidadeNaoPositivaException;
-import br.ufal.ic.p2.bikeshare.excecao.estacao.CampoObrigatorioEstacaoException;
+import br.ufal.ic.p2.bikeshare.servico.estado.EstadoSistema;
+import br.ufal.ic.p2.bikeshare.servico.validacao.ValidadorEntrada;
 
+import java.util.function.Supplier;
 
 public final class ServicoEstacoes {
     private final EstadoSistema estado;
@@ -17,9 +20,9 @@ public final class ServicoEstacoes {
     }
 
     public String criar(String nome, String endereco, String capacidade) {
-        validarPreenchimento(nome, "Nome nao pode ser nulo.");
-        validarPreenchimento(endereco, "Endereco nao pode ser nulo.");
-        validarPreenchimento(capacidade, "Capacidade nao pode ser nula.");
+        validarPreenchimento(nome, NomeNuloException::new);
+        validarPreenchimento(endereco, EnderecoNuloException::new);
+        validarPreenchimento(capacidade, CapacidadeNulaException::new);
         int vagas = validarCapacidade(capacidade);
         Estacao estacao = new Estacao(estado.gerarIdEstacao(), nome.trim(), endereco.trim(), vagas);
         estado.atualizar(estacao);
@@ -40,7 +43,7 @@ public final class ServicoEstacoes {
         return valor;
     }
 
-    private void validarPreenchimento(String valor, String mensagem) {
-        ValidadorEntrada.exigirPreenchido(valor, () -> new CampoObrigatorioEstacaoException(mensagem));
+    private void validarPreenchimento(String valor, Supplier<? extends BikeShareException> erro) {
+        ValidadorEntrada.exigirPreenchido(valor, erro);
     }
 }

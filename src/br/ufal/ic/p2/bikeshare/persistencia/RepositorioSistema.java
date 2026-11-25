@@ -1,18 +1,16 @@
 package br.ufal.ic.p2.bikeshare.persistencia;
 
-import br.ufal.ic.p2.bikeshare.dominio.plano.PlanoAvulso;
-import br.ufal.ic.p2.bikeshare.dominio.plano.PlanoAssinante;
-import br.ufal.ic.p2.bikeshare.dominio.pagamento.Cartao;
-import br.ufal.ic.p2.bikeshare.dominio.pagamento.Pix;
-import br.ufal.ic.p2.bikeshare.dominio.pagamento.SaldoPreCarregado;
-import br.ufal.ic.p2.bikeshare.dominio.usuario.PessoaFisica;
-import br.ufal.ic.p2.bikeshare.dominio.usuario.PessoaJuridica;
+import br.ufal.ic.p2.bikeshare.dominio.aluguel.Aluguel;
 import br.ufal.ic.p2.bikeshare.dominio.bicicleta.BicicletaConvencional;
 import br.ufal.ic.p2.bikeshare.dominio.bicicleta.BicicletaEletrica;
 import br.ufal.ic.p2.bikeshare.dominio.estacao.Estacao;
-import br.ufal.ic.p2.bikeshare.dominio.aluguel.Aluguel;
-import br.ufal.ic.p2.bikeshare.excecao.BikeShareException;
-import br.ufal.ic.p2.bikeshare.excecao.persistencia.PersistenciaException;
+import br.ufal.ic.p2.bikeshare.dominio.pagamento.Cartao;
+import br.ufal.ic.p2.bikeshare.dominio.pagamento.Pix;
+import br.ufal.ic.p2.bikeshare.dominio.pagamento.SaldoPreCarregado;
+import br.ufal.ic.p2.bikeshare.dominio.plano.PlanoAssinante;
+import br.ufal.ic.p2.bikeshare.dominio.plano.PlanoAvulso;
+import br.ufal.ic.p2.bikeshare.dominio.usuario.PessoaFisica;
+import br.ufal.ic.p2.bikeshare.dominio.usuario.PessoaJuridica;
 import br.ufal.ic.p2.bikeshare.excecao.persistencia.CargaPersistenciaException;
 import br.ufal.ic.p2.bikeshare.excecao.persistencia.DadosPersistidosInvalidosException;
 import br.ufal.ic.p2.bikeshare.excecao.persistencia.GravacaoPersistenciaException;
@@ -30,7 +28,6 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
-
 
 public class RepositorioSistema {
     private static final File ARQUIVO = new File("bikeshare_data.xml");
