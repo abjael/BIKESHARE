@@ -1,35 +1,32 @@
 package br.ufal.ic.p2.bikeshare.servico.usuario;
 
-import br.ufal.ic.p2.bikeshare.servico.plano.FabricaPlano;
-import br.ufal.ic.p2.bikeshare.servico.estado.EstadoSistema;
-import br.ufal.ic.p2.bikeshare.servico.validacao.ValidadorEntrada;
-import br.ufal.ic.p2.bikeshare.dominio.plano.Plano;
-import br.ufal.ic.p2.bikeshare.dominio.pagamento.MetodoPagamento;
 import br.ufal.ic.p2.bikeshare.dominio.pagamento.Cartao;
+import br.ufal.ic.p2.bikeshare.dominio.pagamento.MetodoPagamento;
 import br.ufal.ic.p2.bikeshare.dominio.pagamento.Pix;
 import br.ufal.ic.p2.bikeshare.dominio.pagamento.SaldoPreCarregado;
+import br.ufal.ic.p2.bikeshare.dominio.plano.Plano;
 import br.ufal.ic.p2.bikeshare.dominio.usuario.Usuario;
-import br.ufal.ic.p2.bikeshare.excecao.usuario.UsuarioException;
+import br.ufal.ic.p2.bikeshare.excecao.campo.ChavePixNulaException;
+import br.ufal.ic.p2.bikeshare.excecao.campo.NomeNuloException;
+import br.ufal.ic.p2.bikeshare.excecao.campo.SenhaNulaException;
+import br.ufal.ic.p2.bikeshare.excecao.pagamento.PagamentoException;
+import br.ufal.ic.p2.bikeshare.excecao.pagamento.ValorMetodoPagamentoInvalidoException;
 import br.ufal.ic.p2.bikeshare.excecao.usuario.AtributoNaoPodeSerAlteradoException;
 import br.ufal.ic.p2.bikeshare.excecao.usuario.EmailJaCadastradoException;
-import br.ufal.ic.p2.bikeshare.excecao.usuario.ValidadeCartaoInvalidaException;
-import br.ufal.ic.p2.bikeshare.excecao.usuario.ValorSaldoNuloException;
 import br.ufal.ic.p2.bikeshare.excecao.usuario.ValorSaldoNaoNumericoException;
 import br.ufal.ic.p2.bikeshare.excecao.usuario.ValorSaldoNaoPositivoException;
-import br.ufal.ic.p2.bikeshare.excecao.pagamento.ValorMetodoPagamentoInvalidoException;
-import br.ufal.ic.p2.bikeshare.excecao.pagamento.PagamentoException;
+import br.ufal.ic.p2.bikeshare.excecao.usuario.ValorSaldoNuloException;
+import br.ufal.ic.p2.bikeshare.servico.estado.EstadoSistema;
+import br.ufal.ic.p2.bikeshare.servico.plano.FabricaPlano;
+import br.ufal.ic.p2.bikeshare.servico.validacao.ValidadorEntrada;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.regex.Pattern;
 
 import static br.ufal.ic.p2.bikeshare.servico.validacao.ValidadorEntrada.emBranco;
 import static br.ufal.ic.p2.bikeshare.servico.usuario.ValidadorUsuario.validarPreenchimento;
 
-
 final class ServicoAlteracaoUsuario {
-    private static final Pattern VALIDADE_CARTAO = Pattern.compile("^(0[1-9]|1[0-2])/\\d{4}$");
-
     private final EstadoSistema estado;
 
     ServicoAlteracaoUsuario(EstadoSistema estado) {
@@ -72,12 +69,12 @@ final class ServicoAlteracaoUsuario {
     }
 
     private Usuario alterarNome(Usuario usuario, String nome) {
-        validarPreenchimento(nome, "Nome nao pode ser nulo.");
+        validarPreenchimento(nome, NomeNuloException::new);
         return usuario.comNome(nome);
     }
 
     private Usuario alterarSenha(Usuario usuario, String senha) {
-        validarPreenchimento(senha, "Senha nao pode ser nula.");
+        validarPreenchimento(senha, SenhaNulaException::new);
         return usuario.comSenha(senha);
     }
 
@@ -109,8 +106,6 @@ final class ServicoAlteracaoUsuario {
         if (!"cartao".equals(tipo)) {
             throw metodoPagamentoInvalido();
         }
-        validarPreenchimento(numero, "Numero do cartao nao pode ser nulo.");
-        validarValidadeCartao(validade);
         return new Cartao(numero, validade);
     }
 
@@ -118,15 +113,8 @@ final class ServicoAlteracaoUsuario {
         if (!"pix".equals(tipo) || chave == null) {
             throw metodoPagamentoInvalido();
         }
-        validarPreenchimento(chave, "Chave pix nao pode ser nula.");
+        validarPreenchimento(chave, ChavePixNulaException::new);
         return new Pix(chave);
-    }
-
-    private void validarValidadeCartao(String validade) {
-        validarPreenchimento(validade, "Validade do cartao nao pode ser nula.");
-        if (!VALIDADE_CARTAO.matcher(validade.trim()).matches()) {
-            throw new ValidadeCartaoInvalidaException();
-        }
     }
 
     private PagamentoException metodoPagamentoInvalido() {

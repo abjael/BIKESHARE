@@ -1,14 +1,13 @@
 package br.ufal.ic.p2.bikeshare.persistencia;
 
-import br.ufal.ic.p2.bikeshare.dominio.usuario.Usuario;
+import br.ufal.ic.p2.bikeshare.dominio.aluguel.Aluguel;
 import br.ufal.ic.p2.bikeshare.dominio.bicicleta.Bicicleta;
 import br.ufal.ic.p2.bikeshare.dominio.estacao.Estacao;
-import br.ufal.ic.p2.bikeshare.dominio.aluguel.Aluguel;
+import br.ufal.ic.p2.bikeshare.dominio.usuario.Usuario;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
 
 public class EstadoPersistido {
     private final LinkedHashMap<String, Usuario> usuarios;
@@ -48,7 +47,6 @@ public class EstadoPersistido {
         this.proximoIdAluguel = proximoIdAluguel;
     }
 
-    
     public static EstadoPersistido vazio() {
         return new EstadoPersistido(Collections.emptyMap(), 1, Collections.emptyMap(), 1,
                 Collections.emptyMap(), Collections.emptyMap(), 1);

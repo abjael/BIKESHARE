@@ -1,14 +1,13 @@
 package br.ufal.ic.p2.bikeshare.dominio.pagamento;
 
-import br.ufal.ic.p2.bikeshare.dominio.pagamento.SaldoPreCarregado;
-import br.ufal.ic.p2.bikeshare.excecao.pagamento.UsuarioNaoUsaSaldoException;
+import br.ufal.ic.p2.bikeshare.excecao.AtributoInexistenteException;
+import br.ufal.ic.p2.bikeshare.excecao.BikeShareException;
 import br.ufal.ic.p2.bikeshare.excecao.pagamento.UsuarioNaoUsaCartaoException;
 import br.ufal.ic.p2.bikeshare.excecao.pagamento.UsuarioNaoUsaPixException;
-import br.ufal.ic.p2.bikeshare.excecao.pagamento.AtributoPagamentoNaoExisteException;
-import br.ufal.ic.p2.bikeshare.excecao.pagamento.PagamentoException;
-import java.time.LocalDateTime;
+import br.ufal.ic.p2.bikeshare.excecao.pagamento.UsuarioNaoUsaSaldoException;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 public abstract class MetodoPagamento {
@@ -16,11 +15,8 @@ public abstract class MetodoPagamento {
 
     public abstract String getAtributo(String atributo);
 
-    public abstract void validarPagamentoPendente();
-
-    public void validarPagamentoPendente(LocalDateTime data) {
-        validarPagamentoPendente();
-    }
+    /** Confere se este metodo pode cobrar uma retirada feita em {@code data}. */
+    public abstract void validarPagamentoPendente(LocalDateTime data);
 
     public MetodoPagamento cobrar(BigDecimal valor) {
         return this;
@@ -38,19 +34,17 @@ public abstract class MetodoPagamento {
         throw new UsuarioNaoUsaSaldoException();
     }
 
-    
-    public static PagamentoException atributoNaoSuportado(String atributo) {
-        if (ehAtributoDePagamento(atributo) && ("numeroCartao".equals(atributo)
-                || "validadeCartao".equals(atributo))) {
+    public static BikeShareException atributoNaoSuportado(String atributo) {
+        if ("numeroCartao".equals(atributo) || "validadeCartao".equals(atributo)) {
             return new UsuarioNaoUsaCartaoException();
         }
-        if (ehAtributoDePagamento(atributo) && "chavePix".equals(atributo)) {
+        if ("chavePix".equals(atributo)) {
             return new UsuarioNaoUsaPixException();
         }
-        if (ehAtributoDePagamento(atributo) && "saldo".equals(atributo)) {
+        if ("saldo".equals(atributo)) {
             return new UsuarioNaoUsaSaldoException();
         }
-        return new AtributoPagamentoNaoExisteException();
+        return new AtributoInexistenteException();
     }
 
     public static boolean ehAtributoDePagamento(String atributo) {

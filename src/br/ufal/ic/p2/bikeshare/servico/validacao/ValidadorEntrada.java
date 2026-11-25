@@ -2,10 +2,9 @@ package br.ufal.ic.p2.bikeshare.servico.validacao;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.regex.Pattern;
 import java.util.Optional;
 import java.util.function.Supplier;
-
+import java.util.regex.Pattern;
 
 public final class ValidadorEntrada {
     private static final Pattern INTEIRO = Pattern.compile("^-?\\d+$");

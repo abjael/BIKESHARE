@@ -1,16 +1,16 @@
 package br.ufal.ic.p2.bikeshare.servico;
 
+import br.ufal.ic.p2.bikeshare.persistencia.EstadoPersistido;
+import br.ufal.ic.p2.bikeshare.persistencia.RepositorioSistema;
 import br.ufal.ic.p2.bikeshare.servico.aluguel.ServicoAluguel;
 import br.ufal.ic.p2.bikeshare.servico.bicicleta.ServicoBicicletas;
 import br.ufal.ic.p2.bikeshare.servico.estacao.ServicoEstacoes;
 import br.ufal.ic.p2.bikeshare.servico.estado.EstadoSistema;
 import br.ufal.ic.p2.bikeshare.servico.usuario.ServicoUsuarios;
-import br.ufal.ic.p2.bikeshare.persistencia.EstadoPersistido;
-import br.ufal.ic.p2.bikeshare.persistencia.RepositorioSistema;
 
 import java.util.function.Supplier;
 
-/** Owns application state, persistence, and rollback for facade commands. */
+/** Guarda o estado do sistema, a persistencia e desfaz o comando que falhar no meio. */
 public class SistemaBikeShare {
     private final RepositorioSistema repositorio = new RepositorioSistema();
     private final EstadoSistema estado;
@@ -62,12 +62,9 @@ public class SistemaBikeShare {
     }
 
     public void executar(Runnable acao) {
-        EstadoPersistido anterior = estado.capturar();
-        try {
+        executar(() -> {
             acao.run();
-        } catch (RuntimeException excecao) {
-            estado.restaurar(anterior);
-            throw excecao;
-        }
+            return null;
+        });
     }
 }

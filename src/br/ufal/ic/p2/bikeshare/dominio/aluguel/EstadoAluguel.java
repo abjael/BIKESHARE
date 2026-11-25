@@ -1,5 +1,8 @@
 package br.ufal.ic.p2.bikeshare.dominio.aluguel;
 
+import br.ufal.ic.p2.bikeshare.excecao.aluguel.AluguelNaoEstaEmAndamentoException;
+import br.ufal.ic.p2.bikeshare.excecao.aluguel.EstadoAluguelInvalidoException;
+
 public enum EstadoAluguel {
     EM_ANDAMENTO("emAndamento"),
     FINALIZADO("finalizado"),
@@ -18,19 +21,19 @@ public enum EstadoAluguel {
 
     public static EstadoAluguel fromRotulo(String rotulo) {
         if (rotulo == null) {
-            throw new br.ufal.ic.p2.bikeshare.excecao.aluguel.AtributoAluguelNaoExisteException();
+            throw new EstadoAluguelInvalidoException();
         }
         for (EstadoAluguel estado : values()) {
             if (estado.rotulo.equals(rotulo)) {
                 return estado;
             }
         }
-        throw new br.ufal.ic.p2.bikeshare.excecao.aluguel.AtributoAluguelNaoExisteException();
+        throw new EstadoAluguelInvalidoException();
     }
 
     public void exigirEmAndamento() {
         if (this != EM_ANDAMENTO) {
-            throw new br.ufal.ic.p2.bikeshare.excecao.aluguel.AluguelNaoEstaEmAndamentoException();
+            throw new AluguelNaoEstaEmAndamentoException();
         }
     }
 }

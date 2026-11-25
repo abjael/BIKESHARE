@@ -5,7 +5,7 @@ import br.ufal.ic.p2.bikeshare.excecao.BikeShareException;
 public abstract class UsuarioException extends BikeShareException {
     private static final long serialVersionUID = 1L;
 
-    public UsuarioException(String mensagem) {
+    protected UsuarioException(String mensagem) {
         super(mensagem);
     }
 }

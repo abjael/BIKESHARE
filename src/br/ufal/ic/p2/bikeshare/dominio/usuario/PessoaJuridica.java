@@ -1,11 +1,14 @@
 package br.ufal.ic.p2.bikeshare.dominio.usuario;
 
-import br.ufal.ic.p2.bikeshare.dominio.plano.Plano;
 import br.ufal.ic.p2.bikeshare.dominio.pagamento.MetodoPagamento;
-import br.ufal.ic.p2.bikeshare.dominio.usuario.Usuario;
+import br.ufal.ic.p2.bikeshare.dominio.plano.Plano;
+import br.ufal.ic.p2.bikeshare.excecao.BikeShareException;
+import br.ufal.ic.p2.bikeshare.excecao.campo.CnpjNuloException;
+import br.ufal.ic.p2.bikeshare.excecao.campo.RazaoSocialNulaException;
 import br.ufal.ic.p2.bikeshare.excecao.usuario.UsuarioNaoEhPessoaFisicaException;
 
 import java.math.BigDecimal;
+import java.util.function.Supplier;
 
 public class PessoaJuridica extends Usuario {
     private final String cnpj;
@@ -14,16 +17,16 @@ public class PessoaJuridica extends Usuario {
     public PessoaJuridica(String id, String nome, String email, String senha, String cnpj,
                           String razaoSocial, Plano plano) {
         super(id, nome, email, senha, plano);
-        this.cnpj = validarObrigatorio(cnpj, "CNPJ nao pode ser nulo.");
-        this.razaoSocial = validarObrigatorio(razaoSocial, "Razao social nao pode ser nula.");
+        this.cnpj = validarObrigatorio(cnpj, CnpjNuloException::new);
+        this.razaoSocial = validarObrigatorio(razaoSocial, RazaoSocialNulaException::new);
     }
 
     public PessoaJuridica(String id, String nome, String email, String senha, String cnpj,
                           String razaoSocial, Plano plano, MetodoPagamento metodoPagamento,
                           BigDecimal saldoPreCarregado, String aluguelAtivo, BigDecimal totalPendencias) {
         super(id, nome, email, senha, plano, metodoPagamento, saldoPreCarregado, aluguelAtivo, totalPendencias);
-        this.cnpj = validarObrigatorio(cnpj, "CNPJ nao pode ser nulo.");
-        this.razaoSocial = validarObrigatorio(razaoSocial, "Razao social nao pode ser nula.");
+        this.cnpj = validarObrigatorio(cnpj, CnpjNuloException::new);
+        this.razaoSocial = validarObrigatorio(razaoSocial, RazaoSocialNulaException::new);
     }
 
     public String getCnpj() {
@@ -34,9 +37,9 @@ public class PessoaJuridica extends Usuario {
         return razaoSocial;
     }
 
-    private String validarObrigatorio(String valor, String mensagem) {
+    private String validarObrigatorio(String valor, Supplier<? extends BikeShareException> erro) {
         if (valor == null || valor.trim().isEmpty()) {
-            throw new br.ufal.ic.p2.bikeshare.excecao.usuario.CampoObrigatorioException(mensagem);
+            throw erro.get();
         }
         return valor.trim();
     }

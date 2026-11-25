@@ -1,20 +1,18 @@
 package br.ufal.ic.p2.bikeshare.dominio.aluguel;
 
-import br.ufal.ic.p2.bikeshare.dominio.aluguel.EstadoAluguel;
 import br.ufal.ic.p2.bikeshare.dominio.util.ConfiguracaoSistema;
-import br.ufal.ic.p2.bikeshare.dominio.util.FormatoMoeda;
 import br.ufal.ic.p2.bikeshare.dominio.util.FormatoDataHora;
-import br.ufal.ic.p2.bikeshare.excecao.aluguel.AluguelException;
-import br.ufal.ic.p2.bikeshare.excecao.aluguel.AtributoAluguelNaoExisteException;
+import br.ufal.ic.p2.bikeshare.dominio.util.FormatoMoeda;
+import br.ufal.ic.p2.bikeshare.excecao.AtributoInexistenteException;
 import br.ufal.ic.p2.bikeshare.excecao.aluguel.AluguelAindaEmAndamentoException;
-import br.ufal.ic.p2.bikeshare.excecao.aluguel.AluguelNaoEstaEmAndamentoException;
+import br.ufal.ic.p2.bikeshare.excecao.aluguel.DadosAluguelInvalidosException;
 import br.ufal.ic.p2.bikeshare.excecao.aluguel.DataDevolucaoAnteriorException;
+import br.ufal.ic.p2.bikeshare.excecao.aluguel.IdentificacaoAluguelNulaException;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
-
 
 public class Aluguel {
     public static final String EM_ANDAMENTO = EstadoAluguel.EM_ANDAMENTO.getRotulo();
@@ -36,7 +34,6 @@ public class Aluguel {
         this(id, usuario, bicicleta, estacaoOrigem, inicio, EM_ANDAMENTO, null, null, null);
     }
 
-    
     public Aluguel(String id, String usuario, String bicicleta, String estacaoOrigem, String inicio,
                    String estado, String estacaoDestino, String fim, String valorCobrado) {
         this(id, usuario, bicicleta, estacaoOrigem, FormatoDataHora.parse(inicio), estado, estacaoDestino,
@@ -49,7 +46,7 @@ public class Aluguel {
         if (id == null || id.trim().isEmpty() || usuario == null || usuario.trim().isEmpty()
                 || bicicleta == null || bicicleta.trim().isEmpty() || estacaoOrigem == null
                 || estacaoOrigem.trim().isEmpty() || inicio == null) {
-            throw new br.ufal.ic.p2.bikeshare.excecao.aluguel.IdentificacaoAluguelNulaException();
+            throw new IdentificacaoAluguelNulaException();
         }
         EstadoAluguel estadoValidado = EstadoAluguel.fromRotulo(estado);
         validarConsistenciaEstado(estadoValidado, estacaoDestino, fim, valorCobrado, inicio);
@@ -68,13 +65,13 @@ public class Aluguel {
                                            BigDecimal valor, LocalDateTime inicio) {
         if (estadoValidado == EstadoAluguel.EM_ANDAMENTO) {
             if (destino != null || fim != null || valor != null) {
-                throw new br.ufal.ic.p2.bikeshare.excecao.aluguel.AtributoAluguelNaoExisteException();
+                throw new DadosAluguelInvalidosException();
             }
             return;
         }
         if (destino == null || destino.trim().isEmpty() || fim == null || valor == null
                 || fim.isBefore(inicio) || valor.signum() < 0) {
-            throw new br.ufal.ic.p2.bikeshare.excecao.aluguel.DadosAluguelInvalidosException();
+            throw new DadosAluguelInvalidosException();
         }
     }
 
@@ -126,7 +123,6 @@ public class Aluguel {
         return ChronoUnit.MINUTES.between(inicio, dataFim);
     }
 
-    
     public boolean devolvidoNaCarencia(String idEstacao, long minutos) {
         return idEstacao.equals(estacaoOrigem) && minutos <= ConfiguracaoSistema.getMinutosCarencia();
     }
@@ -149,9 +145,10 @@ public class Aluguel {
             throw new DataDevolucaoAnteriorException();
         }
         if (valor == null || valor.signum() < 0) {
-            throw new br.ufal.ic.p2.bikeshare.excecao.pagamento.ValorMetodoPagamentoInvalidoException();
+            throw new DadosAluguelInvalidosException();
         }
-        return new Aluguel(id, usuario, bicicleta, estacaoOrigem, inicio, novoEstado.getRotulo(), destino, dataFim, valor);
+        return new Aluguel(id, usuario, bicicleta, estacaoOrigem, inicio, novoEstado.getRotulo(), destino,
+                dataFim, valor);
     }
 
     public String getAtributo(String atributo) {
@@ -179,7 +176,7 @@ public class Aluguel {
 
     private String getAtributoFinal(String atributo) {
         if (!"fim".equals(atributo) && !"estacaoDestino".equals(atributo) && !"valorCobrado".equals(atributo)) {
-            throw new AtributoAluguelNaoExisteException();
+            throw new AtributoInexistenteException();
         }
         if (estaEmAndamento()) {
             throw new AluguelAindaEmAndamentoException();

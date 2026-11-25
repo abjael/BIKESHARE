@@ -1,6 +1,5 @@
 package br.ufal.ic.p2.bikeshare.dominio.plano;
 
-import br.ufal.ic.p2.bikeshare.dominio.plano.Plano;
 import br.ufal.ic.p2.bikeshare.dominio.util.ConfiguracaoSistema;
 import br.ufal.ic.p2.bikeshare.excecao.plano.PlanoSemMensalidadeException;
 

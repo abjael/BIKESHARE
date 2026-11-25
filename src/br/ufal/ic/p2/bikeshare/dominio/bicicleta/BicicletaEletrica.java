@@ -1,8 +1,8 @@
 package br.ufal.ic.p2.bikeshare.dominio.bicicleta;
 
-import br.ufal.ic.p2.bikeshare.dominio.bicicleta.Bicicleta;
 import br.ufal.ic.p2.bikeshare.dominio.util.ConfiguracaoSistema;
 import br.ufal.ic.p2.bikeshare.excecao.bicicleta.BateriaInsuficienteException;
+import br.ufal.ic.p2.bikeshare.excecao.bicicleta.NivelBateriaForaDaFaixaException;
 
 import java.math.BigDecimal;
 
@@ -16,7 +16,7 @@ public class BicicletaEletrica extends Bicicleta {
     public BicicletaEletrica(String id, String estacao, String estado, int nivelBateria) {
         super(id, estacao, estado);
         if (nivelBateria < 0 || nivelBateria > 100) {
-            throw new br.ufal.ic.p2.bikeshare.excecao.bicicleta.NivelBateriaForaDaFaixaException();
+            throw new NivelBateriaForaDaFaixaException();
         }
         this.nivelBateria = nivelBateria;
     }

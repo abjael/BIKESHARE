@@ -1,12 +1,12 @@
 package br.ufal.ic.p2.bikeshare.dominio.bicicleta;
 
-import br.ufal.ic.p2.bikeshare.dominio.bicicleta.EstadoBicicleta;
-import br.ufal.ic.p2.bikeshare.excecao.bicicleta.BicicletaException;
-import br.ufal.ic.p2.bikeshare.excecao.bicicleta.BicicletaNaoDisponivelException;
-import br.ufal.ic.p2.bikeshare.excecao.bicicleta.AtributoBicicletaNaoExisteException;
+import br.ufal.ic.p2.bikeshare.excecao.AtributoInexistenteException;
+import br.ufal.ic.p2.bikeshare.excecao.BikeShareException;
+import br.ufal.ic.p2.bikeshare.excecao.bicicleta.BicicletaNaoEstaEmUsoException;
+import br.ufal.ic.p2.bikeshare.excecao.bicicleta.IdentificacaoBicicletaNulaException;
+import br.ufal.ic.p2.bikeshare.excecao.estacao.IdentificacaoEstacaoNulaException;
 
 import java.math.BigDecimal;
-
 
 public abstract class Bicicleta {
     public static final String DISPONIVEL = "disponivel";
@@ -19,12 +19,12 @@ public abstract class Bicicleta {
 
     protected Bicicleta(String id, String estacao, String estado) {
         if (id == null || id.trim().isEmpty()) {
-            throw new br.ufal.ic.p2.bikeshare.excecao.bicicleta.IdentificacaoBicicletaNulaException();
+            throw new IdentificacaoBicicletaNulaException();
         }
         EstadoBicicleta estadoValidado = EstadoBicicleta.fromRotulo(estado);
         this.id = id.trim();
         if (estadoValidado != EstadoBicicleta.EM_USO && (estacao == null || estacao.trim().isEmpty())) {
-            throw new br.ufal.ic.p2.bikeshare.excecao.bicicleta.IdentificacaoBicicletaNulaException();
+            throw new IdentificacaoEstacaoNulaException();
         }
         this.estacao = estacao == null ? null : estacao.trim();
         this.estado = estadoValidado;
@@ -54,18 +54,15 @@ public abstract class Bicicleta {
 
     public abstract BigDecimal getAdicionalPorMinuto();
 
-    
     public boolean estaDisponivelParaAluguel() {
         return estado == EstadoBicicleta.DISPONIVEL;
     }
 
-    
     public void validarRetirada() {
         estado.exigirDisponivel();
         validarCondicoesDoTipo();
     }
 
-    
     protected void validarCondicoesDoTipo() {
     }
 
@@ -88,13 +85,13 @@ public abstract class Bicicleta {
 
     private void exigirEmUso() {
         if (estado != EstadoBicicleta.EM_USO) {
-            throw new br.ufal.ic.p2.bikeshare.excecao.bicicleta.BicicletaNaoDisponivelException();
+            throw new BicicletaNaoEstaEmUsoException();
         }
     }
 
     private void validarEstacao(String idEstacao) {
         if (idEstacao == null || idEstacao.trim().isEmpty()) {
-            throw new br.ufal.ic.p2.bikeshare.excecao.bicicleta.IdentificacaoBicicletaNulaException();
+            throw new IdentificacaoEstacaoNulaException();
         }
     }
 
@@ -118,7 +115,7 @@ public abstract class Bicicleta {
 
     protected abstract String getAtributoEspecifico(String atributo);
 
-    protected BicicletaException atributoInexistente() {
-        return new AtributoBicicletaNaoExisteException();
+    protected BikeShareException atributoInexistente() {
+        return new AtributoInexistenteException();
     }
 }
